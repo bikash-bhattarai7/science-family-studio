@@ -28,7 +28,7 @@ def make_voices(cfg, ep: Path, data: dict, demo: bool = False) -> None:
                 _demo_voice(out.with_suffix(".wav"), secs)
             else:
                 from .cast import voice_for
-                jobs.append((text, *voice_for(cfg, code, scene.get("speaker")), out))
+                jobs.append((text, *voice_for(cfg, code, scene.get("speaker")), out, cfg["languages"][code]["voice"]))
     if jobs:
         asyncio.run(_tts_all(jobs))
 
@@ -38,9 +38,12 @@ async def _tts_all(jobs):
 
     sem = asyncio.Semaphore(4)
 
-    async def one(text, voice, rate, pitch, out):
+    async def one(text, voice, rate, pitch, out, backup_voice):
         async with sem:
-            for attempt in range(3):
+            for attempt in range(4):
+                if attempt == 2 and voice != backup_voice:  # this voice keeps failing: use the language's main voice
+                    print(f"  {out.name}: switching voice {voice} -> {backup_voice}")
+                    voice = backup_voice
                 try:
                     await edge_tts.Communicate(text, voice, rate=rate, pitch=pitch).save(str(out))
                     print(f"  voice ok: {out.name}")

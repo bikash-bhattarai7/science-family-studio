@@ -18,7 +18,7 @@ CAST = {
     "sparky": {"desc": "Sparky, a hyper-energetic little comet; super fast talker, loves wow-facts and space, always excited",
                "voice": "en-US-ChristopherNeural", "gender": "m", "pitch": "+15Hz", "rate": "+15%"},
     "rocky": {"desc": "Rocky, a grumpy-but-lovable pebble; sceptical, dry jokes ('Hmph, prove it'), secretly loves science",
-              "voice": "en-US-DavisNeural", "gender": "m", "pitch": "-15Hz", "rate": "-8%"},
+              "voice": "en-US-RogerNeural", "gender": "m", "pitch": "-15Hz", "rate": "-8%", "en_pitch": "-8Hz"},
     "dot": {"desc": "Dot, a giggly green cell; tiny but brave, knows about bodies, germs, and living things",
             "voice": "en-AU-NatashaNeural", "gender": "f", "pitch": "+12Hz", "rate": "+8%"},
 }
@@ -30,7 +30,7 @@ def voice_for(cfg: dict, lang: str, speaker: str | None) -> tuple[str, str, str]
     lc = cfg["languages"][lang]
     ch = CAST.get(speaker or "zippy", CAST["zippy"])
     if lang == "en":
-        return ch["voice"], ch["rate"], "+0Hz"
+        return ch["voice"], ch["rate"], ch.get("en_pitch", "+0Hz")
     voice = lc.get("voice_male" if ch["gender"] == "m" else "voice_female", lc["voice"])
     return voice, ch["rate"], ch["pitch"]
 
