@@ -86,6 +86,10 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
                 parts = r.json()["candidates"][0]["content"]["parts"]
                 return "".join(p.get("text", "") for p in parts if not p.get("thought"))
             return "".join(b.get("text", "") for b in r.json()["content"])
+        if provider == "gemini" and r.status_code == 400 and "think" in r.text.lower() and llm.get("fast_thinking", True):
+            print("  model has no thinking setting, retrying without it")
+            llm["fast_thinking"] = False
+            continue
         if provider == "gemini" and r.status_code == 404:  # model retired: follow Google's suggestion
             m = re.search(r"use models/([\w.\-]+)", r.text)
             if m and m.group(1) != llm["model"]:
@@ -115,10 +119,12 @@ def _call(llm, provider, system, prompt):
                 json={
                     "systemInstruction": {"parts": [{"text": system}]},
                     "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                    "generationConfig": {"maxOutputTokens": llm.get("max_tokens", 16000),
-                                         "responseMimeType": "application/json"},
+                    "generationConfig": dict({"maxOutputTokens": llm.get("max_tokens", 16000),
+                                              "responseMimeType": "application/json"},
+                                             **({"thinkingConfig": {"thinkingLevel": "low"}}
+                                                if llm.get("fast_thinking", True) else {})),
                 },
-                timeout=600,
+                timeout=240,
             )
             return r
         else:
