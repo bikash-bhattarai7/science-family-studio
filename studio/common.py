@@ -75,38 +75,17 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
     llm = cfg["llm"]
     provider = llm.get("provider", "gemini")
     for attempt in range(5):
-        if provider == "gemini":
-            key = os.environ.get("GEMINI_API_KEY")
-            if not key:
-                raise SystemExit("Set GEMINI_API_KEY (free at https://aistudio.google.com/apikey).")
-            r = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{llm['model']}:generateContent",
-                headers={"x-goog-api-key": key, "content-type": "application/json"},
-                json={
-                    "systemInstruction": {"parts": [{"text": system}]},
-                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                    "generationConfig": {"maxOutputTokens": llm.get("max_tokens", 8000),
-                                         "responseMimeType": "application/json"},
-                },
-                timeout=300,
-            )
-            if r.status_code == 200:
+        try:
+            r = _call(llm, provider, system, prompt)
+        except requests.exceptions.RequestException as e:  # timeout / network blip
+            print(f"  AI connection problem ({type(e).__name__}), retrying")
+            time.sleep(10)
+            continue
+        if r is not None and r.status_code == 200:
+            if provider == "gemini":
                 parts = r.json()["candidates"][0]["content"]["parts"]
-                return "".join(p.get("text", "") for p in parts)
-        else:
-            key = os.environ.get("ANTHROPIC_API_KEY")
-            if not key:
-                raise SystemExit("Set ANTHROPIC_API_KEY in your environment or in a .env file.")
-            r = requests.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": key, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": llm["model"], "max_tokens": llm.get("max_tokens", 8000),
-                      "system": system, "messages": [{"role": "user", "content": prompt}]},
-                timeout=300,
-            )
-            if r.status_code == 200:
-                return "".join(b.get("text", "") for b in r.json()["content"])
+                return "".join(p.get("text", "") for p in parts if not p.get("thought"))
+            return "".join(b.get("text", "") for b in r.json()["content"])
         if provider == "gemini" and r.status_code == 404:  # model retired: follow Google's suggestion
             m = re.search(r"use models/([\w.\-]+)", r.text)
             if m and m.group(1) != llm["model"]:
@@ -120,6 +99,41 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
             continue
         raise SystemExit(f"AI error {r.status_code}: {r.text[:500]}")
     raise SystemExit("AI still busy after 5 tries - try again later.")
+
+
+def _call(llm, provider, system, prompt):
+    import requests
+
+    if True:
+        if provider == "gemini":
+            key = os.environ.get("GEMINI_API_KEY")
+            if not key:
+                raise SystemExit("Set GEMINI_API_KEY (free at https://aistudio.google.com/apikey).")
+            r = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{llm['model']}:generateContent",
+                headers={"x-goog-api-key": key, "content-type": "application/json"},
+                json={
+                    "systemInstruction": {"parts": [{"text": system}]},
+                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                    "generationConfig": {"maxOutputTokens": llm.get("max_tokens", 16000),
+                                         "responseMimeType": "application/json"},
+                },
+                timeout=600,
+            )
+            return r
+        else:
+            key = os.environ.get("ANTHROPIC_API_KEY")
+            if not key:
+                raise SystemExit("Set ANTHROPIC_API_KEY in your environment or in a .env file.")
+            r = requests.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": key, "anthropic-version": "2023-06-01",
+                         "content-type": "application/json"},
+                json={"model": llm["model"], "max_tokens": llm.get("max_tokens", 8000),
+                      "system": system, "messages": [{"role": "user", "content": prompt}]},
+                timeout=600,
+            )
+            return r
 
 
 def extract_json(text: str):

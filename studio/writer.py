@@ -125,7 +125,10 @@ def translate(cfg, data: dict) -> dict:
         "description": data["description"],
         "scenes": [s["narration"] for s in data["scenes"]],
     }
-    prompt = f"""Translate this kids' science video into: {names}.
+    out = {}
+    for code in others:  # one language per request: faster and more reliable
+        print(f"  translating -> {names[code]}")
+        prompt = f"""Translate this kids' science video into {names[code]}.
 
 Rules:
 - Natural, warm, spoken style a parent would use with a child. Not word-for-word.
@@ -140,8 +143,11 @@ English source:
 {payload}
 
 Return JSON:
-{{"<lang code>": {{"title": "...", "description": "...", "scenes": ["...one per English scene, same order..."]}} }}"""
-    out = extract_json(ask_claude(cfg, _system(cfg), prompt))
+{{"title": "...", "description": "...", "scenes": ["...one per English scene, same order..."]}}"""
+        res = extract_json(ask_claude(cfg, _system(cfg), prompt))
+        if len(res["scenes"]) != len(data["scenes"]):
+            raise SystemExit(f"{names[code]} translation has the wrong number of scenes - run again.")
+        out[code] = res
 
     data["title"] = {primary: data["title"], **{c: out[c]["title"] for c in others}}
     data["description"] = {primary: data["description"], **{c: out[c]["description"] for c in others}}
