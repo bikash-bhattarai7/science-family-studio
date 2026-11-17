@@ -16,9 +16,11 @@ languages:
   # hi: {name: Hindi,   voice: hi-IN-SwaraNeural,    rate: "+5%"}
   # ne: {name: Nepali,  voice: ne-NP-HemkalaNeural,  rate: "+5%"}
 
-# AI writer (needs ANTHROPIC_API_KEY in your environment or .env file)
+# AI writer. Default = Google Gemini FREE tier (needs GEMINI_API_KEY, free at aistudio.google.com/apikey)
+# Paid alternative: provider: anthropic, model: claude-sonnet-5-5 (needs ANTHROPIC_API_KEY)
 llm:
-  model: claude-sonnet-5-5
+  provider: gemini
+  model: gemini-2.5-flash
   max_tokens: 8000
 
 audience: >

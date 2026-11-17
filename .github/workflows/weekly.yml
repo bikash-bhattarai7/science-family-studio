@@ -2,7 +2,7 @@
 #  - Automatically every Sunday 08:00 UTC (12:00 Dubai)
 #  - Or any time: Actions tab -> "Make episode" -> Run workflow
 # Repo secrets (Settings -> Secrets and variables -> Actions):
-#   ANTHROPIC_API_KEY  (required)
+#   GEMINI_API_KEY  (required, free from aistudio.google.com/apikey)
 #   YT_CLIENT_SECRET, YT_TOKEN  (optional - only for automatic YouTube upload)
 name: Make episode
 on:
@@ -33,7 +33,7 @@ jobs:
       - run: pip install -q -r requirements.txt
 
       - name: Write script (AI)
-        env: {ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"}
+        env: {GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}", ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"}
         run: |
           if [ -n "${{ inputs.topic }}" ]; then python run.py new --topic "${{ inputs.topic }}"; else python run.py new; fi
           EP=$(ls -t episodes | head -1); echo "EP=$EP" >> $GITHUB_ENV

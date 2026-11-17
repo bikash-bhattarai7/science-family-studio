@@ -24,7 +24,7 @@ topic idea → AI script → translations → HUMAN REVIEW → 4 voices → anim
 1. **Install** Python 3.10+ and [ffmpeg](https://ffmpeg.org/download.html). Then run:
    `pip install -r requirements.txt`
 2. **Test offline:** run `python run.py demo`. This renders a sample episode, "Why is the sky blue?", with placeholder beeps instead of voices.
-3. **AI writer:** get an API key at console.anthropic.com. Copy `.env.example` to `.env` and paste the key into it.
+3. **AI writer (free):** get a free Google Gemini key at https://aistudio.google.com/apikey. Copy `.env.example` to `.env` and paste the key into it. (Claude is supported too: set `llm.provider: anthropic`.)
 4. **YouTube:**
    - In Google Cloud Console, create a project and enable **YouTube Data API v3**.
    - Create an OAuth client ID with type **Desktop app**. Download it as `client_secret.json` into this folder.
