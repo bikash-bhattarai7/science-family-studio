@@ -62,24 +62,56 @@ def render_video(cfg, tl: dict, audio: Path, out: Path, size: tuple[int, int], t
     return out
 
 
-def render_thumbnail(cfg, tl: dict, data: dict, out: Path) -> Path:
+def render_thumbnail(cfg, tl: dict, data: dict, out: Path, variant: int = 0, text: str | None = None) -> Path:
+    """3 different looks (variant 0/1/2) for YouTube's thumbnail Test & Compare."""
     W, H = 1280, 720
     ctx = Ctx(W, H)
-    pick = next((s for s in tl["scenes"] if s["visual"] not in ("question", "intro", "outro")), tl["scenes"][0])
-    sc = dict(pick, duration=pick["duration"])
-    v = VISUAL_LIBRARY[sc["visual"]]
-    img = gradient(W, H, *v["bg"]).copy()
-    d = ImageDraw.Draw(img)
-    v["fn"](d, ctx, 2.0, 0.85)
-    DRAW.get(sc.get("speaker", "zippy"), DRAW["zippy"])(d, ctx, 0.3, True, ctx.half_w - 210, ctx.half_h - 220, 1.25)
+    content = [s for s in tl["scenes"] if s["visual"] not in ("question", "intro", "outro")] or tl["scenes"]
     title = data["title"]
     if isinstance(title, dict):
         title = next(iter(title.values()))
-    text = (data.get("thumbnail_text") or title).upper()
-    size = 120
-    while size > 50 and d.textlength(text, font=font(size)) > W * 0.9:
+    text = (text or data.get("thumbnail_text") or title).upper()
+
+    if variant == 0:  # science scene + speaker, yellow headline on top
+        sc = content[0]
+        bg_vis, chars, pos = sc["visual"], [(sc.get("speaker", "zippy"), W / 2 / ctx.s - 210, H / 2 / ctx.s - 220, 1.25)], "top"
+        fill, stroke = (255, 230, 50), (30, 20, 60)
+    elif variant == 1:  # different scene, two characters reacting, banner at bottom
+        sc = content[len(content) // 2]
+        sp = sc.get("speaker", "zippy")
+        other = "bubbles" if sp != "bubbles" else "sparky"
+        bg_vis = sc["visual"]
+        chars = [(other, -ctx.half_w + 200, -60, 1.2), (sp, ctx.half_w - 200, -60, 1.2)]
+        pos, fill, stroke = "bottom", (255, 255, 255), (200, 30, 60)
+    else:  # big character close-up on a question background
+        sc = content[-1]
+        bg_vis = "question"
+        chars = [(sc.get("speaker", "zippy"), -ctx.half_w + 330, 120, 2.1)]
+        pos, fill, stroke = "right", (120, 240, 255), (20, 30, 80)
+
+    v = VISUAL_LIBRARY[bg_vis]
+    img = gradient(W, H, *v["bg"]).copy()
+    d = ImageDraw.Draw(img)
+    (VISUAL_LIBRARY["intro"]["fn"] if variant == 2 else v["fn"])(d, ctx, 2.0, 0.85)
+    for name, x, y, sc_ in chars:
+        DRAW.get(name, DRAW["zippy"])(d, ctx, 0.4, True, x, y, sc_)
+
+    maxw = W * (0.55 if pos == "right" else 0.9)
+    words = text.split()
+    lines = [text] if pos != "right" else [" ".join(words[: (len(words) + 1) // 2]), " ".join(words[(len(words) + 1) // 2:])]
+    lines = [ln for ln in lines if ln]
+    size = 130
+    while size > 50 and max(d.textlength(ln, font=font(size)) for ln in lines) > maxw:
         size -= 6
-    d.text((W / 2, 95), text, font=font(size), fill=(255, 230, 50), anchor="mm",
-           stroke_width=12, stroke_fill=(30, 20, 60))
+    if pos == "top":
+        d.text((W / 2, 95), lines[0], font=font(size), fill=fill, anchor="mm", stroke_width=12, stroke_fill=stroke)
+    elif pos == "bottom":
+        d.rectangle([0, H - 150, W, H], fill=stroke)
+        d.text((W / 2, H - 75), lines[0], font=font(size), fill=fill, anchor="mm", stroke_width=6, stroke_fill=(40, 10, 20))
+    else:
+        y0 = H / 2 - (len(lines) - 1) * size * 0.55
+        for i, ln in enumerate(lines):
+            d.text((W * 0.72, y0 + i * size * 1.1), ln, font=font(size), fill=fill, anchor="mm",
+                   stroke_width=12, stroke_fill=stroke)
     img.save(out, quality=92)
     return out

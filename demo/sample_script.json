@@ -144,5 +144,52 @@
       "why_true": "Fine dust scatters light differently; rovers photographed blue sunsets",
       "source_hint": "NASA Curiosity/Perseverance"
     }
+  ],
+  "title_options": [
+    "Why Is the Sky Blue? The Secret Trip of Sunlight",
+    "The Sky Isn't Really Blue... Here's Why",
+    "Why Is the Sky Blue but Sunsets Orange?"
+  ],
+  "thumbnail_texts": [
+    "Why blue?",
+    "Not blue?!",
+    "Mars sky?!"
+  ],
+  "chapters": [
+    {
+      "scene": 0,
+      "title": "The big question"
+    },
+    {
+      "scene": 2,
+      "title": "Sunlight is a rainbow"
+    },
+    {
+      "scene": 4,
+      "title": "Why blue wins"
+    },
+    {
+      "scene": 6,
+      "title": "Sunsets"
+    },
+    {
+      "scene": 7,
+      "title": "Family quiz"
+    }
+  ],
+  "pinned_comment": "Rocky here. Hmph. Bet you can't guess what colour sunsets are on Mars. Answer below 👇",
+  "community_poll": {
+    "question": "What colour do you think the sky is on Mars?",
+    "options": [
+      "Blue",
+      "Red",
+      "Butterscotch",
+      "Green"
+    ]
+  },
+  "playlist": "Space Questions",
+  "next_topics": [
+    "Why are clouds white?",
+    "Why is the ocean blue?"
   ]
 }

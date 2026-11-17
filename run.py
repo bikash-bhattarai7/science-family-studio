@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from studio import audio, render, social, writer
+from studio import audio, engage, render, social, writer
 from studio.common import ROOT, episode_dir, lang_codes, load_config, read_json, run
 
 
@@ -67,8 +67,9 @@ def build(cfg, ep: Path, demo: bool = False) -> None:
             shutil.copy(srt, out / f"short_{c}.srt")
         (out / "_short_base.mp4").unlink()
 
-    print("5/5 social package")
+    print("5/5 social package + YouTube upload kit")
     social.build_package(cfg, ep)
+    engage.build_kit(cfg, ep, data, tl)
     print(f"\nDone in {time.time() - t0:.0f}s -> {out}")
 
 

@@ -90,6 +90,13 @@ Return JSON:
   "description": "2-3 sentence YouTube description",
   "tags": ["10-15 tags"],
   "thumbnail_text": "2-4 punchy words",
+  "title_options": ["3 different curiosity-driven titles under 60 chars for A/B testing; honest, no ALL CAPS"],
+  "thumbnail_texts": ["3 different 2-4 word thumbnail texts, one per title idea"],
+  "chapters": [{{"scene": 0, "title": "short chapter name"}}, "...4-6 chapters, first at scene 0, in order"],
+  "pinned_comment": "a fun question or mini-quiz for families to answer in the comments (from a character, e.g. 'Rocky here. Hmph...')",
+  "community_poll": {{"question": "poll for the YouTube Community tab, posted the day before", "options": ["2-4 short options"]}},
+  "playlist": "which series playlist this belongs to, e.g. 'Space Questions', 'Amazing Bodies', 'Earth & Weather', 'Animals', 'Everyday Science'",
+  "next_topics": ["2 follow-up topics viewers would want next (for the end screen / next video)"],
   "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "narration": "..."}}],
   "short_scenes": [indices of 3-5 consecutive-or-not scenes that make a strong standalone vertical Short under 55 seconds, starting with the hook],
   "fact_check": [{{"claim": "...", "why_true": "...", "source_hint": "e.g. NASA, NOAA, a textbook topic"}}]
