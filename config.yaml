@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------
+#  Science Family Studio - settings
+#  Edit this file, then run:  python run.py --help
+# ---------------------------------------------------------------
+
+channel_name: "Curious Sparks"      # change to your channel name
+mascot_name: "Zippy"                # the friendly robot host
+
+# Narration languages. The first one is the main video audio.
+# Voices are free Microsoft Edge neural voices (edge-tts).
+# List all voices with:  edge-tts --list-voices
+languages:
+  en: {name: English, voice: en-US-AriaNeural,     rate: "+0%"}
+  # Add these back later for multi-language:
+  # ar: {name: Arabic,  voice: ar-AE-FatimaNeural,   rate: "+5%"}
+  # hi: {name: Hindi,   voice: hi-IN-SwaraNeural,    rate: "+5%"}
+  # ne: {name: Nepali,  voice: ne-NP-HemkalaNeural,  rate: "+5%"}
+
+# AI writer (needs ANTHROPIC_API_KEY in your environment or .env file)
+llm:
+  model: claude-sonnet-5-5
+  max_tokens: 8000
+
+audience: >
+  Families watching together: kids aged 6-12 and their parents.
+  Simple words, playful jokes, one "wow" fact adults will enjoy too.
+  Always scientifically accurate.
+
+video:
+  target_seconds: 90          # long video length goal
+  fps: 30
+  supersample: 1              # 2 = smoother edges, ~3x slower render
+  scene_lead_in: 0.35         # seconds of silence before each scene's narration
+  scene_tail: 0.55            # seconds after the longest language finishes
+  music: builtin              # builtin | none | path/to/your_music.mp3
+  music_volume: 0.10
+
+shorts:
+  enabled: true
+  max_seconds: 58
+  languages: [en]               # add ar, hi, ne later
+
+review:
+  require_approval: true      # pause after writing so a human checks facts + translations
+
+youtube:
+  privacy: private            # private | unlisted | public
+  publish_hour_local: 16      # if privacy is private, schedule publish at this hour
+  timezone: Asia/Dubai
+  publish_days_ahead: 2
+  category_id: "27"           # Education
+  made_for_kids: false        # family audience (see README before changing)
+  upload_shorts_languages: [en]
+  upload_captions: true
+
+social:
+  hashtags: ["#science", "#STEM", "#familylearning", "#scienceforkids", "#funfacts"]
+  webhook_url: ""             # optional Make.com / Zapier webhook to receive each new post package

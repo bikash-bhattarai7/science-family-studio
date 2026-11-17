@@ -1,0 +1,8 @@
+pillow>=10.1
+numpy
+pyyaml
+requests
+edge-tts>=6.1
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2

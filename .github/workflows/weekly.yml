@@ -1,0 +1,66 @@
+# Makes a new science episode in GitHub's cloud.
+#  - Automatically every Sunday 08:00 UTC (12:00 Dubai)
+#  - Or any time: Actions tab -> "Make episode" -> Run workflow
+# Repo secrets (Settings -> Secrets and variables -> Actions):
+#   ANTHROPIC_API_KEY  (required)
+#   YT_CLIENT_SECRET, YT_TOKEN  (optional - only for automatic YouTube upload)
+name: Make episode
+on:
+  schedule: [{cron: "0 8 * * 0"}]
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Topic (leave empty = AI picks one)"
+        required: false
+        default: ""
+      upload:
+        description: "Upload to YouTube as private/scheduled?"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+jobs:
+  episode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      HAS_YT: ${{ secrets.YT_TOKEN != '' && 'yes' || 'no' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-dejavu-core
+      - run: pip install -q -r requirements.txt
+
+      - name: Write script (AI)
+        env: {ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"}
+        run: |
+          if [ -n "${{ inputs.topic }}" ]; then python run.py new --topic "${{ inputs.topic }}"; else python run.py new; fi
+          EP=$(ls -t episodes | head -1); echo "EP=$EP" >> $GITHUB_ENV
+          python run.py approve "$EP"
+
+      - name: Voices + animation
+        run: python run.py build "$EP"
+
+      - name: Upload to YouTube (private, scheduled)
+        if: ${{ inputs.upload == true && env.HAS_YT == 'yes' }}
+        run: |
+          echo '${{ secrets.YT_CLIENT_SECRET }}' > client_secret.json
+          echo '${{ secrets.YT_TOKEN }}' > token.json
+          python run.py upload "$EP"
+
+      - name: Save topic history
+        run: |
+          git config user.name "episode-bot"
+          git config user.email "episode-bot@users.noreply.github.com"
+          git add topics.json && git commit -m "Episode: $EP" && git push || true
+
+      - name: Download link for the videos
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.EP }}
+          path: |
+            episodes/${{ env.EP }}/output/
+            episodes/${{ env.EP }}/REVIEW.md
+            episodes/${{ env.EP }}/social/*/*.txt
+          retention-days: 30

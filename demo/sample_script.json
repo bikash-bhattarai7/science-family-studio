@@ -1,0 +1,71 @@
+{
+  "topic": "Why is the sky blue?",
+  "title": {
+    "en": "Why Is the Sky Blue? The Secret Trip of Sunlight",
+    "ar": "لماذا السماء زرقاء؟ رحلة ضوء الشمس السرية",
+    "hi": "आसमान नीला क्यों है? धूप का सीक्रेट सफ़र",
+    "ne": "आकाश किन नीलो हुन्छ? घामको गोप्य यात्रा"
+  },
+  "description": {
+    "en": "Join Zippy the robot on a trip with a beam of sunlight to discover why the sky is blue, why sunsets glow orange, and what colour the sky is on Mars.",
+    "ar": "انضموا إلى الروبوت زيبي في رحلة مع شعاع من ضوء الشمس لنكتشف لماذا السماء زرقاء، ولماذا يكون الغروب برتقاليًا، وما لون السماء على المريخ.",
+    "hi": "रोबोट ज़िप्पी के साथ धूप की एक किरण के सफ़र पर चलिए और जानिए कि आसमान नीला क्यों है, सूर्यास्त नारंगी क्यों होता है, और मंगल पर आसमान किस रंग का है।",
+    "ne": "रोबोट जिप्पीसँग घामको एउटा किरणको यात्रामा जानुहोस् र थाहा पाउनुहोस् आकाश किन नीलो हुन्छ, सूर्यास्त किन सुन्तला हुन्छ, र मंगलमा आकाश कस्तो रङको हुन्छ।"
+  },
+  "tags": ["why is the sky blue", "science for kids", "light scattering", "rayleigh scattering", "sunset", "mars sky", "family science", "STEM", "fun facts", "animated science"],
+  "thumbnail_text": "Why blue?",
+  "scenes": [
+    {"visual": "question", "narration": {
+      "en": "Have you ever looked up and wondered why the sky is blue, and not green or pink? Let's find out!",
+      "ar": "هل نظرتَ يومًا إلى السماء وتساءلت: لماذا السماء زرقاء، وليست خضراء أو وردية؟ هيا نكتشف!",
+      "hi": "क्या आपने कभी ऊपर देखकर सोचा है कि आसमान नीला क्यों है, हरा या गुलाबी क्यों नहीं? चलो पता लगाते हैं!",
+      "ne": "के तपाईंले कहिल्यै माथि हेरेर सोच्नुभएको छ, आकाश किन नीलो हुन्छ, हरियो वा गुलाबी किन हुँदैन? आउनुहोस्, पत्ता लगाऔं!"}},
+    {"visual": "intro", "narration": {
+      "en": "Hi, I'm Zippy! Today we're going on a trip with a beam of sunlight.",
+      "ar": "مرحبًا، أنا زيبي! اليوم سنذهب في رحلة مع شعاع من ضوء الشمس.",
+      "hi": "नमस्ते, मैं ज़िप्पी हूँ! आज हम सूरज की एक किरण के साथ सफ़र पर चलेंगे।",
+      "ne": "नमस्ते, म जिप्पी हुँ! आज हामी घामको एउटा किरणसँग यात्रामा जाँदैछौं।"}},
+    {"visual": "light_prism", "narration": {
+      "en": "Sunlight looks white, but it's really a mix of all the colours of the rainbow, travelling together.",
+      "ar": "يبدو ضوء الشمس أبيض، لكنه في الحقيقة خليط من كل ألوان قوس قزح تسافر معًا.",
+      "hi": "धूप सफ़ेद दिखती है, लेकिन असल में यह इंद्रधनुष के सारे रंगों का मेल है, जो साथ-साथ चलते हैं।",
+      "ne": "घाम सेतो देखिन्छ, तर वास्तवमा यो इन्द्रेणीका सबै रङहरूको मिश्रण हो, जुन सँगै यात्रा गर्छन्।"}},
+    {"visual": "sun_rays", "narration": {
+      "en": "When sunlight reaches Earth, it bumps into tiny bits of air, much, much smaller than a speck of dust.",
+      "ar": "عندما يصل ضوء الشمس إلى الأرض، يصطدم بجزيئات هواء صغيرة جدًا، أصغر بكثير من ذرة غبار.",
+      "hi": "जब धूप धरती तक पहुँचती है, तो यह हवा के बहुत ही छोटे कणों से टकराती है, जो धूल के कण से भी बहुत छोटे होते हैं।",
+      "ne": "जब घाम पृथ्वीमा आइपुग्छ, यो हावाका धेरै साना कणहरूसँग ठोक्किन्छ, जुन धुलोको कणभन्दा पनि धेरै साना हुन्छन्।"}},
+    {"visual": "atom", "narration": {
+      "en": "Those tiny air bits bounce blue light around much more than red light. So blue light gets scattered all across the sky, and that's what we see!",
+      "ar": "هذه الجزيئات الصغيرة تبعثر الضوء الأزرق أكثر بكثير من الضوء الأحمر. لذلك ينتشر الأزرق في كل أنحاء السماء، وهذا ما نراه!",
+      "hi": "हवा के ये छोटे कण लाल रोशनी के मुकाबले नीली रोशनी को कहीं ज़्यादा इधर-उधर बिखेरते हैं। इसलिए नीली रोशनी पूरे आसमान में फैल जाती है, और हमें वही दिखती है!",
+      "ne": "हावाका यी साना कणहरूले रातो प्रकाशभन्दा नीलो प्रकाशलाई धेरै बढी छरिदिन्छन्। त्यसैले नीलो प्रकाश पूरै आकाशभरि फैलिन्छ, र हामी त्यही देख्छौं!"}},
+    {"visual": "space_orbit", "narration": {
+      "en": "Wow fact for grown-ups: on the Moon there is no air to scatter light, so the sky is black, even in the middle of the day!",
+      "ar": "معلومة مدهشة للكبار: على القمر لا يوجد هواء يبعثر الضوء، لذلك تبدو السماء سوداء حتى في منتصف النهار!",
+      "hi": "बड़ों के लिए एक कमाल की बात: चाँद पर रोशनी बिखेरने के लिए हवा नहीं है, इसलिए वहाँ दोपहर में भी आसमान काला दिखता है!",
+      "ne": "ठूलाहरूका लागि एउटा अचम्मको कुरा: चन्द्रमामा प्रकाश छर्ने हावा छैन, त्यसैले त्यहाँ दिउँसो पनि आकाश कालो देखिन्छ!"}},
+    {"visual": "sun_rays", "narration": {
+      "en": "And sunsets? When the sun is low, its light travels through much more air. Most of the blue gets scattered away, so oranges and reds reach your eyes.",
+      "ar": "وماذا عن الغروب؟ عندما تكون الشمس منخفضة، يقطع ضوؤها مسافة أطول في الهواء. فيتبعثر معظم الأزرق، ويصل إلى عينيك البرتقالي والأحمر.",
+      "hi": "और सूर्यास्त? जब सूरज नीचे होता है, तो उसकी रोशनी को बहुत ज़्यादा हवा से गुज़रना पड़ता है। ज़्यादातर नीला रंग रास्ते में बिखर जाता है, इसलिए हमें नारंगी और लाल रंग दिखते हैं।",
+      "ne": "अनि सूर्यास्त? जब सूर्य तल हुन्छ, उसको प्रकाशले धेरै बढी हावा पार गर्नुपर्छ। धेरैजसो नीलो रङ बाटैमा छरिन्छ, त्यसैले हाम्रा आँखामा सुन्तला र रातो रङ आइपुग्छन्।"}},
+    {"visual": "question", "narration": {
+      "en": "Family quiz! What colour is the sky on Mars? Pause and guess... It's a dusty butterscotch by day, and Mars sunsets are blue!",
+      "ar": "مسابقة للعائلة! ما لون السماء على المريخ؟ توقفوا وخمّنوا... إنها بلون الكراميل المغبر نهارًا، وغروب الشمس هناك أزرق!",
+      "hi": "फ़ैमिली क्विज़! मंगल ग्रह पर आसमान का रंग क्या है? वीडियो रोकिए और अंदाज़ा लगाइए... दिन में वह धूल भरा हल्का भूरा-पीला होता है, और वहाँ का सूर्यास्त नीला होता है!",
+      "ne": "परिवार क्विज! मंगल ग्रहमा आकाश कस्तो रङको हुन्छ? भिडियो रोकेर अनुमान गर्नुहोस्... दिउँसो त्यो धुलाम्मे हल्का खैरो-पहेंलो हुन्छ, र त्यहाँको सूर्यास्त नीलो हुन्छ!"}},
+    {"visual": "outro", "narration": {
+      "en": "Next time you look up, remember the bouncing blue light! Subscribe for more fun science with Zippy. Bye-bye!",
+      "ar": "في المرة القادمة التي تنظر فيها إلى السماء، تذكّر الضوء الأزرق المتطاير! اشترك لمزيد من العلوم الممتعة مع زيبي. إلى اللقاء!",
+      "hi": "अगली बार जब आप ऊपर देखें, तो उछलती हुई नीली रोशनी को याद रखिए! मज़ेदार विज्ञान के लिए ज़िप्पी के साथ सब्सक्राइब करें। बाय-बाय!",
+      "ne": "अर्को पटक माथि हेर्दा उफ्रिरहेको नीलो प्रकाशलाई सम्झनुहोला! जिप्पीसँग थप रमाइलो विज्ञानका लागि सब्सक्राइब गर्नुहोस्। बाइ-बाइ!"}}
+  ],
+  "short_scenes": [0, 2, 4, 5],
+  "fact_check": [
+    {"claim": "Sunlight is a mix of all visible colours", "why_true": "A prism splits white light into a spectrum (Newton)", "source_hint": "any physics textbook"},
+    {"claim": "Air molecules scatter blue light much more than red", "why_true": "Rayleigh scattering is stronger for shorter wavelengths (~1/wavelength^4)", "source_hint": "NASA SpacePlace"},
+    {"claim": "The Moon's sky is black in daytime", "why_true": "No atmosphere to scatter sunlight", "source_hint": "NASA Apollo photos"},
+    {"claim": "Mars has a butterscotch daytime sky and blue sunsets", "why_true": "Fine dust scatters light differently; rovers photographed blue sunsets", "source_hint": "NASA Curiosity/Perseverance"}
+  ]
+}
