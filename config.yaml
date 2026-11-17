@@ -20,7 +20,7 @@ languages:
 # Paid alternative: provider: anthropic, model: claude-sonnet-5-5 (needs ANTHROPIC_API_KEY)
 llm:
   provider: gemini
-  model: gemini-2.5-flash
+  model: gemini-3.8-flash
   max_tokens: 8000
 
 audience: >

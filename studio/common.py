@@ -107,6 +107,12 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
             )
             if r.status_code == 200:
                 return "".join(b.get("text", "") for b in r.json()["content"])
+        if provider == "gemini" and r.status_code == 404:  # model retired: follow Google's suggestion
+            m = re.search(r"use models/([\w.\-]+)", r.text)
+            if m and m.group(1) != llm["model"]:
+                print(f"  model {llm['model']} retired, switching to {m.group(1)}")
+                llm["model"] = m.group(1)
+                continue
         if r.status_code in (429, 500, 503, 529):  # busy / free-tier rate limit: wait and retry
             wait = 20 * (attempt + 1)
             print(f"  AI busy ({r.status_code}), retrying in {wait}s")
