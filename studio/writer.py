@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .common import ROOT, ask_claude, extract_json, lang_codes, new_episode_dir, read_json, write_json
+from .cast import CAST
 from .visuals import VISUAL_LIBRARY
 
 TOPICS_FILE = ROOT / "topics.json"
@@ -61,6 +62,7 @@ def mark_topic_done(topic: str) -> None:
 # ---------------------------------------------------------------- script
 def write_script(cfg, topic: str) -> Path:
     visuals = "\n".join(f"- {k}: {v['desc']}" for k, v in VISUAL_LIBRARY.items())
+    cast = "\n".join(f"- {k}: {v['desc']}" for k, v in CAST.items())
     secs = cfg["video"]["target_seconds"]
     prompt = f"""Write a {secs}-second animated science video answering: "{topic}"
 
@@ -73,7 +75,11 @@ Structure (7-10 scenes, each 1-3 short sentences, ~2.3 spoken words per second o
 
 Rules:
 - Narration is spoken only; nothing is written on screen, so never say "as you can see here written".
-- {cfg['mascot_name']} the robot is the narrator and can make one gentle joke per video.
+- It's a funny little show with an original cartoon cast. Write it as DIALOGUE: each scene is spoken by ONE character.
+  Use Zippy plus 2-3 other characters who fit the topic. Give them banter, reactions and one or two jokes,
+  but keep the science clear. Cast (use these exact keys as "speaker"):
+{cast}
+- Never mention or imitate characters from existing films, TV shows or brands.
 - For each scene pick the visual that best matches from this library:
 {visuals}
 
@@ -84,7 +90,7 @@ Return JSON:
   "description": "2-3 sentence YouTube description",
   "tags": ["10-15 tags"],
   "thumbnail_text": "2-4 punchy words",
-  "scenes": [{{"visual": "<library key>", "narration": "..."}}],
+  "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "narration": "..."}}],
   "short_scenes": [indices of 3-5 consecutive-or-not scenes that make a strong standalone vertical Short under 55 seconds, starting with the hook],
   "fact_check": [{{"claim": "...", "why_true": "...", "source_hint": "e.g. NASA, NOAA, a textbook topic"}}]
 }}"""
@@ -93,6 +99,8 @@ Return JSON:
     for s in data["scenes"]:
         if s["visual"] not in VISUAL_LIBRARY:
             s["visual"] = "question"
+        if s.get("speaker") not in CAST:
+            s["speaker"] = "zippy"
 
     # ---- translate every spoken/written string
     data = translate(cfg, data)
@@ -125,7 +133,8 @@ Rules:
 - Keep scientific terms correct; use the common local word if one exists.
 - Arabic: Modern Standard Arabic, simple. Hindi: everyday Hindi (avoid heavy Sanskrit words).
   Nepali: standard Nepali in Devanagari.
-- Keep the robot's name "{cfg['mascot_name']}" unchanged.
+- Character names (Zippy, Professor Hoot, Bubbles, Sparky, Rocky, Dot): keep them, written in the target script.
+- Keep each character's personality and jokes (adapt jokes so they work in that language).
 
 English source:
 {payload}
@@ -153,7 +162,7 @@ def write_review(cfg, ep: Path, data: dict) -> None:
     lines += [f"- **{c}**: {data['title'][c]}" for c in codes]
     lines += ["", "## Scenes"]
     for i, s in enumerate(data["scenes"]):
-        lines.append(f"### Scene {i + 1}  (visual: {s['visual']})")
+        lines.append(f"### Scene {i + 1}  ({s.get('speaker', 'zippy')}, visual: {s['visual']})")
         lines += [f"- **{c}**: {s['narration'][c]}" for c in codes]
         lines.append("")
     (ep / "REVIEW.md").write_text("\n".join(lines), encoding="utf-8")

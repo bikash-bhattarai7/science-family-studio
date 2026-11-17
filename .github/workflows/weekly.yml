@@ -61,6 +61,7 @@ jobs:
           name: ${{ env.EP }}
           path: |
             episodes/${{ env.EP }}/output/
+            episodes/${{ env.EP }}/captions/
             episodes/${{ env.EP }}/REVIEW.md
             episodes/${{ env.EP }}/social/*/*.txt
           retention-days: 30

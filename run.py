@@ -46,6 +46,8 @@ def build(cfg, ep: Path, demo: bool = False) -> None:
         run(["ffmpeg", "-v", "error", "-y", "-i", str(main), "-i", str(tracks[c]), "-map", "0:v", "-map", "1:a",
              "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out / f"video_{c}.mp4")])
     render.render_thumbnail(cfg, tl, data, out / "thumbnail.jpg")
+    for c in codes[1:]:  # small MP3 audio tracks for YouTube Studio -> Languages -> Audio
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(tracks[c]), "-b:a", "192k", str(out / f"audio_track_{c}.mp3")])
 
     if cfg["shorts"]["enabled"]:
         print("4/5 Shorts / Reels (vertical)")

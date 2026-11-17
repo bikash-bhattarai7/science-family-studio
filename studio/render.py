@@ -6,7 +6,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from .visuals import VISUAL_LIBRARY, Ctx, draw_mascot, font, gradient
+from .cast import DRAW, draw_lineup, draw_speaker
+from .visuals import VISUAL_LIBRARY, Ctx, font, gradient
 
 
 def _frame(ctx, scene, lt, talking, total_t):
@@ -15,10 +16,11 @@ def _frame(ctx, scene, lt, talking, total_t):
     d = ImageDraw.Draw(img)
     p = min(1.0, lt / max(scene["duration"], 0.01))
     v["fn"](d, ctx, lt, p)
+    speaker = scene.get("speaker", "zippy")
     if scene["visual"] in ("intro", "outro"):
-        draw_mascot(d, ctx, total_t, talking, "center", wave=True)
+        draw_lineup(d, ctx, total_t, speaker, talking)
     else:
-        draw_mascot(d, ctx, total_t, talking, "corner")
+        draw_speaker(d, ctx, speaker, total_t, talking)
     return img
 
 
@@ -69,7 +71,7 @@ def render_thumbnail(cfg, tl: dict, data: dict, out: Path) -> Path:
     img = gradient(W, H, *v["bg"]).copy()
     d = ImageDraw.Draw(img)
     v["fn"](d, ctx, 2.0, 0.85)
-    draw_mascot(d, ctx, 0.3, True, scale=1.3, pos=(ctx.half_w - 210, ctx.half_h - 230))
+    DRAW.get(sc.get("speaker", "zippy"), DRAW["zippy"])(d, ctx, 0.3, True, ctx.half_w - 210, ctx.half_h - 220, 1.25)
     title = data["title"]
     if isinstance(title, dict):
         title = next(iter(title.values()))

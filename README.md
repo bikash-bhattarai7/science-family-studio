@@ -8,11 +8,17 @@ topic idea → AI script → translations → HUMAN REVIEW → 4 voices → anim
    → YouTube upload (localized titles) → social media package
 ```
 
+## The cast (original characters)
+Zippy (robot host), Professor Hoot (wise owl), Bubbles (curious axolotl kid), Sparky (hyper comet),
+Rocky (grumpy pebble) and Dot (giggly cell). The AI writes each episode as funny dialogue between them.
+Each character has its own voice in English. In Arabic, Hindi and Nepali they use male/female voices
+with their own pitch and speed. To change voices or add characters, edit `studio/cast.py`.
+
 ## What you get per episode (`episodes/<id>/`)
 | File | Use |
 |---|---|
 | `output/video_main.mp4` | 1080p video with English audio, which gets uploaded to YouTube |
-| `tracks/main_ar.wav`, `main_hi.wav`, `main_ne.wav` | Extra audio tracks to add in YouTube Studio |
+| `output/audio_track_ar.mp3`, `_hi.mp3`, `_ne.mp3` | Extra audio tracks to add in YouTube Studio |
 | `output/video_<lang>.mp4` | The full video in each language (for Facebook, WhatsApp, a 2nd channel) |
 | `output/short_<lang>.mp4` | 9:16 Short/Reel/TikTok in each language |
 | `captions/*.srt` | Subtitles in all 4 languages (uploaded automatically) |

@@ -10,11 +10,10 @@ mascot_name: "Zippy"                # the friendly robot host
 # Voices are free Microsoft Edge neural voices (edge-tts).
 # List all voices with:  edge-tts --list-voices
 languages:
-  en: {name: English, voice: en-US-AriaNeural,     rate: "+0%"}
-  # Add these back later for multi-language:
-  # ar: {name: Arabic,  voice: ar-AE-FatimaNeural,   rate: "+5%"}
-  # hi: {name: Hindi,   voice: hi-IN-SwaraNeural,    rate: "+5%"}
-  # ne: {name: Nepali,  voice: ne-NP-HemkalaNeural,  rate: "+5%"}
+  en: {name: English, voice: en-US-AriaNeural}   # each character has its own English voice (studio/cast.py)
+  ar: {name: Arabic, voice: ar-AE-FatimaNeural, voice_female: ar-AE-FatimaNeural, voice_male: ar-AE-HamdanNeural}
+  hi: {name: Hindi,  voice: hi-IN-SwaraNeural,  voice_female: hi-IN-SwaraNeural,  voice_male: hi-IN-MadhurNeural}
+  ne: {name: Nepali, voice: ne-NP-HemkalaNeural, voice_female: ne-NP-HemkalaNeural, voice_male: ne-NP-SagarNeural}
 
 # AI writer. Default = Google Gemini FREE tier (needs GEMINI_API_KEY, free at aistudio.google.com/apikey)
 # Paid alternative: provider: anthropic, model: claude-sonnet-5-5 (needs ANTHROPIC_API_KEY)
@@ -40,7 +39,7 @@ video:
 shorts:
   enabled: true
   max_seconds: 58
-  languages: [en]               # add ar, hi, ne later
+  languages: [en, ar, hi, ne]   # vertical clips made in each language
 
 review:
   require_approval: true      # pause after writing so a human checks facts + translations

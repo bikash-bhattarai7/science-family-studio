@@ -527,8 +527,8 @@ def sc_outro(d, ctx, t, p):
         ctx.rect(d, x - w, y - 8, x + w, y + 8, [(255, 90, 120), (255, 220, 60), (90, 200, 255), (120, 230, 120)][i % 4])
     k = pop((t - 0.4) / 0.6)
     swing = math.sin(t * 6) * 0.25 * (1 if t % 3 < 1 else 0)
-    bx, by = (0, -330) if ctx.portrait else (ctx.half_w * 0.5, -40)
-    S = 1.6 * k
+    bx, by = (0, -330) if ctx.portrait else (0, -250)
+    S = 1.4 * k
     pts = [(-60, 40), (-48, -30), (-30, -60), (0, -72), (30, -60), (48, -30), (60, 40)]
     rot = [(bx + (x * math.cos(swing) - y * math.sin(swing)) * S, by + (x * math.sin(swing) + y * math.cos(swing)) * S) for x, y in pts]
     if k > 0.05:

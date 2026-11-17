@@ -27,8 +27,8 @@ def make_voices(cfg, ep: Path, data: dict, demo: bool = False) -> None:
                 secs = max(1.5, len(text.split()) / _DEMO_WPS.get(code, 2.3))
                 _demo_voice(out.with_suffix(".wav"), secs)
             else:
-                lc = cfg["languages"][code]
-                jobs.append((text, lc["voice"], lc.get("rate", "+0%"), out))
+                from .cast import voice_for
+                jobs.append((text, *voice_for(cfg, code, scene.get("speaker")), out))
     if jobs:
         asyncio.run(_tts_all(jobs))
 
@@ -38,11 +38,11 @@ async def _tts_all(jobs):
 
     sem = asyncio.Semaphore(4)
 
-    async def one(text, voice, rate, out):
+    async def one(text, voice, rate, pitch, out):
         async with sem:
             for attempt in range(3):
                 try:
-                    await edge_tts.Communicate(text, voice, rate=rate).save(str(out))
+                    await edge_tts.Communicate(text, voice, rate=rate, pitch=pitch).save(str(out))
                     print(f"  voice ok: {out.name}")
                     return
                 except Exception as e:  # network hiccups
@@ -82,7 +82,8 @@ def build_timeline(cfg, ep: Path, data: dict, scene_ids: list[int]) -> dict:
             clips[(code, i)] = a
             lens[code] = len(a) / SAMPLE_RATE
         dur = lead + max(lens.values()) + tail
-        scenes.append({"index": i, "visual": data["scenes"][i]["visual"], "start": t,
+        scenes.append({"index": i, "visual": data["scenes"][i]["visual"],
+                       "speaker": data["scenes"][i].get("speaker", "zippy"), "start": t,
                        "duration": dur, "speech": {c: [t + lead, t + lead + l] for c, l in lens.items()}})
         t += dur
     return {"total": t, "scenes": scenes, "_clips": clips}
