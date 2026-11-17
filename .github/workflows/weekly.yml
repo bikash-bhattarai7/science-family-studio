@@ -13,6 +13,15 @@ on:
         description: "Topic (leave empty = AI picks one)"
         required: false
         default: ""
+      ai_model:
+        description: "AI model for writing"
+        type: choice
+        default: "standard (gemini-3.8-flash)"
+        options:
+          - "standard (gemini-3.8-flash)"
+          - "fast (auto-lite)"
+          - "newest flash (auto-flash)"
+          - "best quality, slow (auto-pro)"
       upload:
         description: "Upload to YouTube as private/scheduled?"
         type: boolean
@@ -34,8 +43,9 @@ jobs:
       - run: pip install -q -r requirements.txt
 
       - name: Write script (AI)
-        env: {GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}", ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"}
+        env: {GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}", ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}", AI_CHOICE: "${{ inputs.ai_model }}"}
         run: |
+          if [ -n "$AI_CHOICE" ]; then export AI_MODEL=$(echo "$AI_CHOICE" | sed -E 's/.*\((.*)\).*/\1/'); echo "AI model: $AI_MODEL"; fi
           if [ -n "${{ inputs.topic }}" ]; then python run.py new --topic "${{ inputs.topic }}"; else python run.py new; fi
           EP=$(ls -t episodes | head -1); echo "EP=$EP" >> $GITHUB_ENV
           python run.py approve "$EP"

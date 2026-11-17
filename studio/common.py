@@ -74,12 +74,22 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
 
     llm = cfg["llm"]
     provider = llm.get("provider", "gemini")
+    if os.environ.get("AI_MODEL"):  # chosen in the Run workflow menu (or set on your PC)
+        llm["model"] = os.environ["AI_MODEL"]
+    if provider == "gemini":
+        llm["model"] = resolve_model(llm["model"])
     for attempt in range(5):
         try:
             r = _call(llm, provider, system, prompt)
         except requests.exceptions.RequestException as e:  # timeout / network blip
-            print(f"  AI connection problem ({type(e).__name__}), retrying")
-            time.sleep(10)
+            fb = llm.get("fallback_model")
+            if provider == "gemini" and fb and not llm.get("_fell_back"):
+                llm["_fell_back"] = True
+                llm["model"] = resolve_model(fb)
+                print(f"  AI too slow ({type(e).__name__}), switching to faster model {llm['model']}")
+            else:
+                print(f"  AI connection problem ({type(e).__name__}), retrying")
+                time.sleep(10)
             continue
         if r is not None and r.status_code == 200:
             if provider == "gemini":
@@ -105,6 +115,44 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
     raise SystemExit("AI still busy after 5 tries - try again later.")
 
 
+_RESOLVED: dict = {}
+
+
+def resolve_model(name: str) -> str:
+    """'auto-lite' / 'auto-flash' / 'auto-pro' -> newest matching free Gemini model your key can use."""
+    if not name.startswith("auto-") or name in _RESOLVED:
+        return _RESOLVED.get(name, name)
+    import requests
+
+    kind = {"auto-lite": "flash-lite", "auto-flash": "flash", "auto-pro": "pro"}.get(name, "flash")
+    r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
+                     headers={"x-goog-api-key": os.environ.get("GEMINI_API_KEY", "")}, timeout=30)
+    r.raise_for_status()
+    best = pick_model([m for m in r.json().get("models", [])
+                       if "generateContent" in m.get("supportedGenerationMethods", [])], kind)
+    if not best:
+        raise SystemExit(f"No Gemini '{kind}' model available for your key.")
+    print(f"  {name} -> {best}")
+    _RESOLVED[name] = best
+    return best
+
+
+def pick_model(models: list[dict], kind: str) -> str | None:
+    def ver(n):
+        m = re.match(r"gemini-(\d+(?:\.\d+)?)-(.*)$", n)
+        return (float(m.group(1)), m.group(2)) if m else (0, "")
+    cands = []
+    for m in models:
+        n = m["name"].split("/")[-1]
+        v, rest = ver(n)
+        if not v or any(x in rest for x in ("preview", "exp", "image", "tts", "audio", "live", "embedding")):
+            continue
+        base = rest.split("-0")[0]  # drop dated suffixes like -001
+        if (kind == "flash" and base == "flash") or (kind != "flash" and base == kind):
+            cands.append((v, n))
+    return max(cands)[1] if cands else None
+
+
 def _call(llm, provider, system, prompt):
     import requests
 
@@ -124,7 +172,7 @@ def _call(llm, provider, system, prompt):
                                              **({"thinkingConfig": {"thinkingLevel": "low"}}
                                                 if llm.get("fast_thinking", True) else {})),
                 },
-                timeout=240,
+                timeout=llm.get("timeout_seconds", 150),
             )
             return r
         else:

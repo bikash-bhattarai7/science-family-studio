@@ -19,7 +19,9 @@ languages:
 # Paid alternative: provider: anthropic, model: claude-sonnet-5-5 (needs ANTHROPIC_API_KEY)
 llm:
   provider: gemini
-  model: gemini-3.8-flash
+  model: gemini-3.8-flash      # or auto-flash / auto-lite (fastest) / auto-pro (best quality, lowest free limits)
+  fallback_model: auto-lite    # used automatically if the main model is too slow
+  timeout_seconds: 150
   max_tokens: 16000
 
 audience: >
