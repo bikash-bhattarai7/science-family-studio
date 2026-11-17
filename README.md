@@ -14,6 +14,14 @@ Rocky (grumpy pebble) and Dot (giggly cell). The AI writes each episode as funny
 Each character has its own voice in English. In Arabic, Hindi and Nepali they use male/female voices
 with their own pitch and speed. To change voices or add characters, edit `studio/cast.py`.
 
+## YouTube engagement kit
+Every episode includes `output/UPLOAD_KIT.md` with: 3 title options, 3 thumbnails (A/B/C) for YouTube's
+*Test & compare*, a description with chapters, tags, a pinned comment, a Community poll, a playlist,
+end-screen ideas and a weekly posting rhythm. See `examples/UPLOAD_KIT_example.md`.
+
+![Cast](examples/cast.png)
+![Thumbnail test](examples/thumbnail_test_ABC.png)
+
 ## What you get per episode (`episodes/<id>/`)
 | File | Use |
 |---|---|
@@ -22,7 +30,8 @@ with their own pitch and speed. To change voices or add characters, edit `studio
 | `output/video_<lang>.mp4` | The full video in each language (for Facebook, WhatsApp, a 2nd channel) |
 | `output/short_<lang>.mp4` | 9:16 Short/Reel/TikTok in each language |
 | `captions/*.srt` | Subtitles in all 4 languages (uploaded automatically) |
-| `output/thumbnail.jpg` | 1280×720 thumbnail |
+| `output/thumbnail_A/B/C.jpg` | 3 thumbnails for Test & compare |
+| `output/UPLOAD_KIT.md` | Step-by-step upload + engagement checklist |
 | `social/<lang>/*.txt` | Captions for Instagram, TikTok, Facebook and Shorts |
 | `REVIEW.md` | Facts and translations to check before building |
 
