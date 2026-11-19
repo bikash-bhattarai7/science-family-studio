@@ -1,10 +1,17 @@
 {
+  "version": 2,
   "queue": [
-    "How do fireflies make their bellies glow in the dark?",
-    "Why does popping candy crackle inside your mouth?",
-    "Why does helium gas make your voice sound squeaky?",
-    "How do baby plant seeds know which way is 'up' in the dark dirt?",
-    "Why does it smell so fresh and clean right after it rains?"
+    "What would happen if the Moon suddenly disappeared?",
+    "Why is snot green when you get a cold?",
+    "Do goldfish really only have a 3-second memory?",
+    "Why does your tummy make loud rumbling noises when you are hungry?",
+    "Which is faster: the world's fastest animal or a super race car?",
+    "Why do we get hiccups and how do we stop them?",
+    "What would happen if you tried to land on Jupiter?",
+    "Does lightning really never strike the same place twice?",
+    "Why do farts make a sound and smell so bad?",
+    "Why do we get goosebumps when we are cold or scared?",
+    "How do cats always land on their feet when they fall?"
   ],
   "done": [
     "What does outer space actually smell like?",
@@ -13,6 +20,14 @@
     "Why is the ocean salty, but rivers are sweet and fresh?",
     "Why do our fingers get wrinkly in the bathtub?",
     "Why do we yawn when we see someone else yawn?",
-    "Why do flamingos stand on just one leg?"
+    "Why do flamingos stand on just one leg?",
+    "Why do we get brain freeze when we eat ice cream fast?"
+  ],
+  "old_ideas": [
+    "How do fireflies make their bellies glow in the dark?",
+    "Why does popping candy crackle inside your mouth?",
+    "Why does helium gas make your voice sound squeaky?",
+    "How do baby plant seeds know which way is 'up' in the dark dirt?",
+    "Why does it smell so fresh and clean right after it rains?"
   ]
 }
