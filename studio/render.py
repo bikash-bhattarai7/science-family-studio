@@ -10,17 +10,18 @@ from .cast import DRAW, draw_lineup, draw_speaker
 from .visuals import VISUAL_LIBRARY, Ctx, font, gradient
 
 
-def _frame(ctx, scene, lt, talking, total_t):
+def _frame(ctx, scene, lt, talking, total_t, names=None):
     v = VISUAL_LIBRARY.get(scene["visual"], VISUAL_LIBRARY["question"])
     img = gradient(ctx.W, ctx.H, *v["bg"]).copy()
     d = ImageDraw.Draw(img)
     p = min(1.0, lt / max(scene["duration"], 0.01))
     v["fn"](d, ctx, lt, p)
-    speaker = scene.get("speaker", "zippy")
+    speaker = scene.get("speaker", "leo")
+    emotion = scene.get("emotion", "happy")
     if scene["visual"] in ("intro", "outro"):
-        draw_lineup(d, ctx, total_t, speaker, talking)
+        draw_lineup(d, ctx, total_t, speaker, talking, names, emotion)
     else:
-        draw_speaker(d, ctx, speaker, total_t, talking)
+        draw_speaker(d, ctx, speaker, total_t, talking, emotion)
     return img
 
 
@@ -38,6 +39,7 @@ def render_video(cfg, tl: dict, audio: Path, out: Path, size: tuple[int, int], t
            "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(out)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     scenes = tl["scenes"]
+    names = list(dict.fromkeys(sc.get("speaker", "leo") for sc in scenes))
     si = 0
     white = Image.new("RGB", (W, H), (255, 255, 255))
     for f in range(n):
@@ -48,7 +50,7 @@ def render_video(cfg, tl: dict, audio: Path, out: Path, size: tuple[int, int], t
         lt = t - sc["start"]
         langs = [talk_lang] if talk_lang else list(sc["speech"].keys())
         talking = any(sc["speech"][c][0] <= t <= sc["speech"][c][1] for c in langs)
-        img = _frame(ctx, sc, lt, talking, t)
+        img = _frame(ctx, sc, lt, talking, t, names)
         if ss > 1:
             img = img.resize((W, H), Image.LANCZOS)
         if si > 0 and lt < 0.22:  # soft flash transition between scenes
@@ -94,7 +96,7 @@ def render_thumbnail(cfg, tl: dict, data: dict, out: Path, variant: int = 0, tex
     d = ImageDraw.Draw(img)
     (VISUAL_LIBRARY["intro"]["fn"] if variant == 2 else v["fn"])(d, ctx, 2.0, 0.85)
     for name, x, y, sc_ in chars:
-        DRAW.get(name, DRAW["zippy"])(d, ctx, 0.4, True, x, y, sc_)
+        DRAW.get(name, DRAW["leo"])(d, ctx, 0.4, True, x, y, sc_, "surprised" if variant else "excited")
 
     maxw = W * (0.55 if pos == "right" else 0.9)
     words = text.split()

@@ -537,6 +537,45 @@ def sc_outro(d, ctx, t, p):
         ctx.circle(d, bx, by - 78 * S, 9 * S, (255, 205, 50))
 
 
+def sc_comment_prompt(d, ctx, t, p):
+    """End of a Short: 'A or B? Comment!' - big A/B buttons, comment bubble, arrows down."""
+    pr = ctx.portrait
+    top = -560 if pr else -300
+    for i, (lab, col) in enumerate([("A", (255, 120, 80)), ("B", (80, 170, 255))]):
+        k = pop((t - 0.2 - i * 0.25) / 0.5)
+        x = (-200 if i == 0 else 200)
+        y = top + 60 + (10 * math.sin(t * 4 + i))
+        R = 120 * k
+        if R > 2:
+            ctx.circle(d, x, y + 10, R, (40, 30, 70))
+            ctx.circle(d, x, y, R, col, outline=(255, 255, 255), width=10)
+            X, Y = ctx.P(x, y)
+            d.text((X, Y), lab, font=font(int(150 * k * ctx.s)), fill=(255, 255, 255), anchor="mm",
+                   stroke_width=int(6 * ctx.s), stroke_fill=(40, 30, 70))
+    # comment bubble with typing dots
+    cy = top + 330
+    k = pop((t - 0.8) / 0.5)
+    if k > 0.05:
+        ctx.rect(d, -230 * k, cy - 95 * k, 230 * k, cy + 95 * k, (255, 255, 255), r=60 * k, outline=(40, 30, 70), width=8)
+        ctx.poly(d, [(-60 * k, cy + 90 * k), (-130 * k, cy + 170 * k), (-10 * k, cy + 92 * k)], (255, 255, 255))
+        for j in range(3):
+            b = abs(math.sin(t * 5 - j * 0.6))
+            ctx.circle(d, (-100 + j * 100) * k, cy - 18 * b * k, 28 * k, (120, 90, 200))
+    # bouncing arrows pointing down to the comments
+    for j in range(3):
+        y = cy + 230 + j * 70 + 15 * math.sin(t * 6 - j)
+        ctx.poly(d, [(-60, y), (60, y), (0, y + 50)], lerp_col((255, 230, 80), (255, 140, 60), j / 2))
+    # hearts floating up
+    for j in range(8):
+        ph = (t * 0.5 + j / 8) % 1
+        x = -ctx.half_w * 0.8 + (j * 233) % (ctx.half_w * 1.6)
+        y = ctx.half_h - ph * ctx.half_h * 2
+        r = 16 + 6 * (j % 3)
+        ctx.circle(d, x - r * 0.5, y, r * 0.6, (255, 90, 130))
+        ctx.circle(d, x + r * 0.5, y, r * 0.6, (255, 90, 130))
+        ctx.poly(d, [(x - r * 1.08, y + r * 0.2), (x + r * 1.08, y + r * 0.2), (x, y + r * 1.3)], (255, 90, 130))
+
+
 VISUAL_LIBRARY = {
     "question": {"fn": sc_question, "bg": ((120, 70, 200), (60, 30, 120)), "desc": "big bouncing question mark (hooks, quiz moments)"},
     "intro": {"fn": sc_intro, "bg": ((80, 200, 255), (40, 90, 200)), "desc": "host robot waves hello with confetti burst"},
@@ -558,6 +597,7 @@ VISUAL_LIBRARY = {
     "wind": {"fn": sc_wind, "bg": ((150, 210, 255), (225, 245, 255)), "desc": "wind turbines and blowing leaves (wind, air, energy)"},
     "brain": {"fn": sc_brain, "bg": ((60, 30, 90), (110, 50, 120)), "desc": "brain with sparkling neurons (brain, senses, sleep, memory)"},
     "gravity": {"fn": sc_gravity, "bg": ((150, 210, 255), (225, 245, 255)), "desc": "falling apple and bouncing ball (gravity, motion, forces)"},
+    "comment_prompt": {"fn": sc_comment_prompt, "bg": ((255, 200, 90), (255, 120, 150)), "desc": "A-or-B answer buttons and a comment bubble (ONLY for the end-of-Short question)"},
     "outro": {"fn": sc_outro, "bg": ((255, 120, 150), (255, 180, 100)), "desc": "confetti and a ringing bell, host waves goodbye (ending, subscribe)"},
 }
 

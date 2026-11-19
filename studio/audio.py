@@ -86,7 +86,8 @@ def build_timeline(cfg, ep: Path, data: dict, scene_ids: list[int]) -> dict:
             lens[code] = len(a) / SAMPLE_RATE
         dur = lead + max(lens.values()) + tail
         scenes.append({"index": i, "visual": data["scenes"][i]["visual"],
-                       "speaker": data["scenes"][i].get("speaker", "zippy"), "start": t,
+                       "speaker": data["scenes"][i].get("speaker", "leo"),
+                       "emotion": data["scenes"][i].get("emotion", "happy"), "start": t,
                        "duration": dur, "speech": {c: [t + lead, t + lead + l] for c, l in lens.items()}})
         t += dur
     return {"total": t, "scenes": scenes, "_clips": clips}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from .kids import KIDS, draw_kid
 from .visuals import Ctx, draw_mascot, lerp_col
 
 OUTLINE = (40, 30, 60)
@@ -22,6 +23,11 @@ CAST = {
     "dot": {"desc": "Dot, a giggly green cell; tiny but brave, knows about bodies, germs, and living things",
             "voice": "en-AU-NatashaNeural", "gender": "f", "pitch": "+12Hz", "rate": "+8%"},
 }
+
+
+# the four school kids are the main characters; the others are guest stars
+CAST = {**{k: {kk: v[kk] for kk in ("desc", "voice", "gender", "pitch", "rate", "en_pitch")} for k, v in KIDS.items()},
+        **CAST}
 
 
 def voice_for(cfg: dict, lang: str, speaker: str | None) -> tuple[str, str, str]:
@@ -210,30 +216,52 @@ def zippy(d, ctx, t, talking, bx, by, S):
     draw_mascot(d, ctx, t, talking, scale=S, pos=(bx, by))
 
 
-DRAW = {"zippy": zippy, "hoot": hoot, "bubbles": bubbles, "sparky": sparky, "rocky": rocky, "dot": dot}
+def _plain(fn):
+    def wrapped(d, ctx, t, talking, bx, by, S, emotion="happy"):
+        fn(d, ctx, t, talking, bx, by, S)
+    return wrapped
+
+
+def _kid(name):
+    def wrapped(d, ctx, t, talking, bx, by, S, emotion="happy"):
+        draw_kid(name, d, ctx, t, talking, bx, by, S, emotion)
+    return wrapped
+
+
+DRAW = {**{k: _kid(k) for k in KIDS},
+        **{k: _plain(f) for k, f in {"zippy": zippy, "hoot": hoot, "bubbles": bubbles, "sparky": sparky,
+                                     "rocky": rocky, "dot": dot}.items()}}
 
 
 # ---------------------------------------------------------------- placement
-def draw_speaker(d, ctx: Ctx, name: str, t: float, talking: bool) -> None:
+def draw_speaker(d, ctx: Ctx, name: str, t: float, talking: bool, emotion: str = "happy") -> None:
     """Speaking character in the corner (landscape) or bottom centre (Shorts)."""
-    fn = DRAW.get(name, zippy)
+    fn = DRAW.get(name, DRAW["leo"])
+    big = name in KIDS
     if ctx.portrait:
-        fn(d, ctx, t, talking, 0, ctx.half_h - 220, 1.05)
+        fn(d, ctx, t, talking, 0, ctx.half_h - (300 if big else 220), 1.5 if big else 1.05, emotion)
     else:
-        fn(d, ctx, t, talking, ctx.half_w - 200, ctx.half_h - 185, 1.0)
+        fn(d, ctx, t, talking, ctx.half_w - 230, ctx.half_h - (265 if big else 185), 1.38 if big else 1.0, emotion)
 
 
-def draw_lineup(d, ctx: Ctx, t: float, speaker: str | None, talking: bool) -> None:
-    """Whole cast together (intro / outro). The speaker bounces a little."""
-    names = list(DRAW)
+def draw_lineup(d, ctx: Ctx, t: float, speaker: str | None, talking: bool, names: list[str] | None = None,
+                emotion: str = "happy") -> None:
+    """The episode's characters together (intro / outro). The speaker hops a little."""
+    names = [n for n in (names or list(KIDS)) if n in DRAW][:5]
+    n = len(names)
     if ctx.portrait:
-        spots = [(-300, 120), (0, 120), (300, 120), (-300, 520), (0, 520), (300, 520)]
-        S = 0.85
+        cols = min(3, n)
+        rows = [names[:cols], names[cols:]]
+        spots = []
+        for r, row in enumerate(rows):
+            for i, _ in enumerate(row):
+                spots.append((-(len(row) - 1) * 150 + i * 300, 150 + r * 420))
+        S = 0.95
     else:
-        n = len(names)
-        span = min(ctx.half_w * 1.75, 1650)
-        spots = [(-span / 2 + i * span / (n - 1), 230) for i in range(n)]
-        S = 0.8
+        span = min(ctx.half_w * 1.6, 300 * (n - 1))
+        spots = [(-span / 2 + i * span / max(1, n - 1), 260) for i in range(n)] if n > 1 else [(0, 260)]
+        S = 0.9
     for i, (name, (x, y)) in enumerate(zip(names, spots)):
-        hop = -abs(math.sin(t * 5)) * 18 if name == speaker and talking else math.sin(t * 2 + i) * 5
-        DRAW[name](d, ctx, t + i * 0.7, talking and name == speaker, x, y + hop, S)
+        is_sp = name == speaker
+        hop = -abs(math.sin(t * 5)) * 18 if is_sp and talking else math.sin(t * 2 + i) * 5
+        DRAW[name](d, ctx, t + i * 0.7, talking and is_sp, x, y + hop, S, emotion if is_sp else "happy")

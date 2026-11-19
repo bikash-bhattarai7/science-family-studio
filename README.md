@@ -9,12 +9,16 @@ topic idea → AI script → translations → HUMAN REVIEW → 4 voices → anim
 ```
 
 ## The cast (original characters)
-Zippy (robot host), Professor Hoot (wise owl), Bubbles (curious axolotl kid), Sparky (hyper comet),
+![Kids](examples/kids.png)
+
+Main characters: four school kids - **Leo** (curious), **Maya** (clever, a bit bossy), **Arjun** (funny, always hungry), **Noor** (kind, loves space). Each scene has an emotion (happy, excited, surprised, thinking, grumpy, worried, explaining) that changes their face and pose.
+Guest stars: Zippy (robot host), Professor Hoot (wise owl), Bubbles (curious axolotl kid), Sparky (hyper comet),
 Rocky (grumpy pebble) and Dot (giggly cell). The AI writes each episode as funny dialogue between them.
 Each character has its own voice in English. In Arabic, Hindi and Nepali they use male/female voices
 with their own pitch and speed. To change voices or add characters, edit `studio/cast.py`.
 
 ## YouTube engagement kit
+Every Short ends with an **A-or-B question** card ("Comment A or B!") so viewers comment; the kit tells you to pin the answer after 24 hours.
 Every episode includes `output/UPLOAD_KIT.md` with: 3 title options, 3 thumbnails (A/B/C) for YouTube's
 *Test & compare*, a description with chapters, tags, a pinned comment, a Community poll, a playlist,
 end-screen ideas and a weekly posting rhythm. See `examples/UPLOAD_KIT_example.md`.

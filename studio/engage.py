@@ -74,7 +74,9 @@ def build_kit(cfg: dict, ep: Path, data: dict, tl: dict) -> Path:
           "## 5. Shorts (post 1-2 days apart)",
           *[f"- `short_{c}.mp4`: title `{data['title'][c] if isinstance(data['title'], dict) else title} #Shorts`"
             for c in cfg['shorts']['languages']],
-          "- In the Short's upload screen, set **Related video** to the main video so viewers jump to it.", "",
+          "- In the Short's upload screen, set **Related video** to the main video so viewers jump to it.",
+          f"- The Short ends with: *{(data.get('short_question') or {}).get('narration', '')}*",
+          f"- After 24 h, pin a reply with the answer: **{(data.get('short_question') or {}).get('answer', '')}**", "",
           "## 6. Community tab (the day before)",
           f"**Poll:** {poll.get('question', '')}",
           *[f"- {o}" for o in poll.get("options", [])], "",

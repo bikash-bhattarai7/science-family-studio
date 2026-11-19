@@ -29,13 +29,19 @@ def load_topics() -> dict:
 def generate_ideas(cfg, count: int = 12) -> list[str]:
     topics = load_topics()
     used = topics["queue"] + topics["done"]
-    prompt = (
-        f"Suggest {count} new video topics phrased as questions a curious child would ask "
-        "(e.g. 'Why is the sky blue?'). Mix space, earth, body, animals, chemistry, physics, plants, weather. "
-        "Each must be explainable in 90 seconds and fun to animate. "
-        f"Do NOT repeat or closely overlap these: {used[-200:]}\n"
-        'Return JSON: {"topics": ["...", "..."]}'
-    )
+    prompt = f"""Suggest {count} NEW science video topics for a family channel (kids 6-12 + parents).
+Make them irresistible to click and easy to search. Mix these formats:
+- "Why does my body...?" (hiccups, goosebumps, brain freeze, tummy rumbles)
+- "What would happen if...?" (no Moon, you fell into Jupiter, the Earth stopped spinning)
+- "Myth or fact?" (do goldfish have 3-second memory? does lightning never strike twice?)
+- "Which is bigger / faster / stronger...?" (fastest animal vs fastest car, biggest star)
+- everyday kid life: school, food, sleep, pets, playground, screens, weather today
+- gross-but-safe and funny (why do farts smell? why is snot green?)
+- amazing animals and space records
+Rules: phrased as a short question a child would actually say; answerable in 90 seconds; fun to animate;
+nothing scary, gory or dangerous to try. Put the 4 most clickable first.
+Do NOT repeat or closely overlap these: {used[-200:]}
+Return JSON: {{"topics": ["...", "..."]}}"""
     new = extract_json(ask_claude(cfg, _system(cfg), prompt))["topics"]
     topics["queue"].extend(t for t in new if t not in used)
     write_json(TOPICS_FILE, topics)
@@ -66,22 +72,33 @@ def write_script(cfg, topic: str) -> Path:
     secs = cfg["video"]["target_seconds"]
     prompt = f"""Write a {secs}-second animated science video answering: "{topic}"
 
-Structure (7-10 scenes, each 1-3 short sentences, ~2.3 spoken words per second overall):
-1. Hook: a surprising question or "did you know" (scene visual 'question' or a fitting one).
-2. Explain step by step with a simple everyday comparison kids know.
-3. One "wow" fact that grown-ups will enjoy too.
-4. A safe try-at-home idea or quick quiz question for the family (no fire, no chemicals beyond kitchen basics).
-5. Short outro inviting families to subscribe (visual 'outro').
+It's a funny, fast animated show. Four original school kids are the main characters; guest
+characters appear when they fit the topic. Write it as DIALOGUE: each scene is ONE character speaking.
+Use 2-3 kids + at most 1-2 guests. Cast (use these exact keys as "speaker"):
+{cast}
+
+Structure (8-11 scenes, each 1-3 SHORT sentences, ~2.3 spoken words per second overall):
+1. HOOK in the first 5 seconds: a kid says something surprising, funny or relatable
+   ("My hiccups won't STOP!"), then the big question. Visual 'question' or a fitting one.
+2. OPEN LOOP: tease the wow fact ("...and wait till you hear what happens on Mars!") to keep viewers watching.
+3. Explain step by step with a comparison kids know (food, toys, school, playground). Characters react,
+   disagree, joke ("No way!", "Hmph, prove it."). Every 2-3 scenes something surprising happens.
+4. The WOW fact that grown-ups enjoy too.
+5. A family challenge: a safe try-at-home idea or a quick "pause and guess" quiz.
+6. Outro (visual 'outro'): a kid asks viewers a question to answer in the comments, then invites them to subscribe.
 
 Rules:
-- Narration is spoken only; nothing is written on screen, so never say "as you can see here written".
-- It's a funny little show with an original cartoon cast. Write it as DIALOGUE: each scene is spoken by ONE character.
-  Use Zippy plus 2-3 other characters who fit the topic. Give them banter, reactions and one or two jokes,
-  but keep the science clear. Cast (use these exact keys as "speaker"):
-{cast}
+- Narration is spoken only; nothing is written on screen.
+- Give each scene an "emotion" for the speaker: happy, excited, surprised, thinking, grumpy, worried, explaining.
+  Vary them - expressions make it fun to watch.
 - Never mention or imitate characters from existing films, TV shows or brands.
-- For each scene pick the visual that best matches from this library:
+- Science must be correct. No scary, gory or unsafe content.
+- For each scene pick the visual that best matches from this library (never use 'comment_prompt' in "scenes"):
 {visuals}
+
+ALSO write "short_question": the last line of the vertical Short. One kid asks an A-or-B question that is easy
+to answer in a comment, about the topic, e.g. "Which is faster: A, a cheetah... or B, a race car? Comment A or B!"
+Keep it under 20 words. Do not give the answer.
 
 Return JSON:
 {{
@@ -93,21 +110,29 @@ Return JSON:
   "title_options": ["3 different curiosity-driven titles under 60 chars for A/B testing; honest, no ALL CAPS"],
   "thumbnail_texts": ["3 different 2-4 word thumbnail texts, one per title idea"],
   "chapters": [{{"scene": 0, "title": "short chapter name"}}, "...4-6 chapters, first at scene 0, in order"],
-  "pinned_comment": "a fun question or mini-quiz for families to answer in the comments (from a character, e.g. 'Rocky here. Hmph...')",
+  "pinned_comment": "a fun A-or-B question or mini-quiz for families to answer in the comments, written by one of the kids (e.g. 'Maya here! ...')",
   "community_poll": {{"question": "poll for the YouTube Community tab, posted the day before", "options": ["2-4 short options"]}},
   "playlist": "which series playlist this belongs to, e.g. 'Space Questions', 'Amazing Bodies', 'Earth & Weather', 'Animals', 'Everyday Science'",
   "next_topics": ["2 follow-up topics viewers would want next (for the end screen / next video)"],
-  "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "narration": "..."}}],
+  "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "emotion": "<emotion>", "narration": "..."}}],
+  "short_question": {{"speaker": "<kid key>", "narration": "...Comment A or B!", "answer": "the correct answer + one-line reason (for a pinned reply after 24h)"}},
   "short_scenes": [indices of 3-5 consecutive-or-not scenes that make a strong standalone vertical Short under 55 seconds, starting with the hook],
   "fact_check": [{{"claim": "...", "why_true": "...", "source_hint": "e.g. NASA, NOAA, a textbook topic"}}]
 }}"""
     data = extract_json(ask_claude(cfg, _system(cfg), prompt))
 
+    emotions = {"happy", "excited", "surprised", "thinking", "grumpy", "worried", "explaining"}
     for s in data["scenes"]:
-        if s["visual"] not in VISUAL_LIBRARY:
+        if s["visual"] not in VISUAL_LIBRARY or s["visual"] == "comment_prompt":
             s["visual"] = "question"
         if s.get("speaker") not in CAST:
-            s["speaker"] = "zippy"
+            s["speaker"] = "leo"
+        if s.get("emotion") not in emotions:
+            s["emotion"] = "happy"
+    q = data.get("short_question") or {}
+    if q.get("narration"):  # extra scene used only at the end of the Shorts
+        data["scenes"].append({"visual": "comment_prompt", "speaker": q.get("speaker") if q.get("speaker") in CAST else "maya",
+                               "emotion": "excited", "narration": q["narration"], "short_only": True})
 
     # ---- translate every spoken/written string
     data = translate(cfg, data)
@@ -175,7 +200,8 @@ def write_review(cfg, ep: Path, data: dict) -> None:
     lines += [f"- **{c}**: {data['title'][c]}" for c in codes]
     lines += ["", "## Scenes"]
     for i, s in enumerate(data["scenes"]):
-        lines.append(f"### Scene {i + 1}  ({s.get('speaker', 'zippy')}, visual: {s['visual']})")
+        tag = " - SHORT-ONLY comment question" if s.get("short_only") else ""
+        lines.append(f"### Scene {i + 1}  ({s.get('speaker', 'leo')}, {s.get('emotion', 'happy')}, visual: {s['visual']}){tag}")
         lines += [f"- **{c}**: {s['narration'][c]}" for c in codes]
         lines.append("")
     (ep / "REVIEW.md").write_text("\n".join(lines), encoding="utf-8")

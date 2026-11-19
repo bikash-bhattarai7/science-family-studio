@@ -35,7 +35,9 @@ def build(cfg, ep: Path, demo: bool = False) -> None:
     audio.make_voices(cfg, ep, data, demo=demo)
 
     print("2/5 main video timeline + audio tracks")
-    tl = audio.build_timeline(cfg, ep, data, list(range(len(data["scenes"]))))
+    main_ids = [i for i, s in enumerate(data["scenes"]) if not s.get("short_only")]
+    q_ids = [i for i, s in enumerate(data["scenes"]) if s.get("short_only")]
+    tl = audio.build_timeline(cfg, ep, data, main_ids)
     tracks = audio.mix_tracks(cfg, ep, tl, "main")
     audio.write_captions(cfg, ep, data, tl, "main")
     audio.save_timeline(ep, tl, "main")
@@ -51,11 +53,11 @@ def build(cfg, ep: Path, demo: bool = False) -> None:
 
     if cfg["shorts"]["enabled"]:
         print("4/5 Shorts / Reels (vertical)")
-        ids = [i for i in data.get("short_scenes", [0, 1, 2]) if i < len(data["scenes"])]
-        stl = audio.build_timeline(cfg, ep, data, ids)
+        ids = [i for i in data.get("short_scenes", [0, 1, 2]) if i in main_ids]
+        stl = audio.build_timeline(cfg, ep, data, ids + q_ids)
         while stl["total"] > cfg["shorts"]["max_seconds"] and len(ids) > 1:
             ids = ids[:-1]
-            stl = audio.build_timeline(cfg, ep, data, ids)
+            stl = audio.build_timeline(cfg, ep, data, ids + q_ids)
         strk = audio.mix_tracks(cfg, ep, stl, "short")
         audio.write_captions(cfg, ep, data, stl, "short")
         audio.save_timeline(ep, stl, "short")
