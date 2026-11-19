@@ -1,7 +1,6 @@
 {
   "version": 2,
   "queue": [
-    "What would happen if the Moon suddenly disappeared?",
     "Why is snot green when you get a cold?",
     "Do goldfish really only have a 3-second memory?",
     "Why does your tummy make loud rumbling noises when you are hungry?",
@@ -21,7 +20,8 @@
     "Why do our fingers get wrinkly in the bathtub?",
     "Why do we yawn when we see someone else yawn?",
     "Why do flamingos stand on just one leg?",
-    "Why do we get brain freeze when we eat ice cream fast?"
+    "Why do we get brain freeze when we eat ice cream fast?",
+    "What would happen if the Moon suddenly disappeared?"
   ],
   "old_ideas": [
     "How do fireflies make their bellies glow in the dark?",
