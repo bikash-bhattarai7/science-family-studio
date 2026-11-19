@@ -17,6 +17,11 @@ Rocky (grumpy pebble) and Dot (giggly cell). The AI writes each episode as funny
 Each character has its own voice in English. In Arabic, Hindi and Nepali they use male/female voices
 with their own pitch and speed. To change voices or add characters, edit `studio/cast.py`.
 
+## Places
+![Places](examples/places.png)
+
+Scenes happen in real-feeling locations - classroom, science lab, garden, playground, school yard, kitchen, bedroom at night, beach. The science animation plays on the classroom whiteboard or in a glowing "imagination window". The AI picks 2-3 places per episode. Add places in `studio/places.py`.
+
 ## YouTube engagement kit
 Every Short ends with an **A-or-B question** card ("Comment A or B!") so viewers comment; the kit tells you to pin the answer after 24 hours.
 Every episode includes `output/UPLOAD_KIT.md` with: 3 title options, 3 thumbnails (A/B/C) for YouTube's

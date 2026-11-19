@@ -35,7 +35,8 @@
         "ne": "के तपाईंले कहिल्यै माथि हेरेर सोच्नुभएको छ, आकाश किन नीलो हुन्छ, हरियो वा गुलाबी किन हुँदैन? आउनुहोस्, पत्ता लगाऔं!"
       },
       "speaker": "leo",
-      "emotion": "surprised"
+      "emotion": "surprised",
+      "place": "classroom"
     },
     {
       "visual": "intro",
@@ -46,7 +47,8 @@
         "ne": "नमस्ते, म जिप्पी हुँ! आज हामी घामको एउटा किरणसँग यात्रामा जाँदैछौं।"
       },
       "speaker": "maya",
-      "emotion": "happy"
+      "emotion": "happy",
+      "place": "school_yard"
     },
     {
       "visual": "light_prism",
@@ -57,7 +59,8 @@
         "ne": "घाम सेतो देखिन्छ, तर वास्तवमा यो इन्द्रेणीका सबै रङहरूको मिश्रण हो, जुन सँगै यात्रा गर्छन्।"
       },
       "speaker": "noor",
-      "emotion": "explaining"
+      "emotion": "explaining",
+      "place": "classroom"
     },
     {
       "visual": "sun_rays",
@@ -68,7 +71,8 @@
         "ne": "जब घाम पृथ्वीमा आइपुग्छ, यो हावाका धेरै साना कणहरूसँग ठोक्किन्छ, जुन धुलोको कणभन्दा पनि धेरै साना हुन्छन्।"
       },
       "speaker": "noor",
-      "emotion": "thinking"
+      "emotion": "thinking",
+      "place": "garden"
     },
     {
       "visual": "atom",
@@ -79,7 +83,8 @@
         "ne": "हावाका यी साना कणहरूले रातो प्रकाशभन्दा नीलो प्रकाशलाई धेरै बढी छरिदिन्छन्। त्यसैले नीलो प्रकाश पूरै आकाशभरि फैलिन्छ, र हामी त्यही देख्छौं!"
       },
       "speaker": "maya",
-      "emotion": "explaining"
+      "emotion": "explaining",
+      "place": "science_lab"
     },
     {
       "visual": "space_orbit",
@@ -90,7 +95,8 @@
         "ne": "ठूलाहरूका लागि एउटा अचम्मको कुरा: चन्द्रमामा प्रकाश छर्ने हावा छैन, त्यसैले त्यहाँ दिउँसो पनि आकाश कालो देखिन्छ!"
       },
       "speaker": "arjun",
-      "emotion": "surprised"
+      "emotion": "surprised",
+      "place": "bedroom_night"
     },
     {
       "visual": "sun_rays",
@@ -101,7 +107,8 @@
         "ne": "अनि सूर्यास्त? जब सूर्य तल हुन्छ, उसको प्रकाशले धेरै बढी हावा पार गर्नुपर्छ। धेरैजसो नीलो रङ बाटैमा छरिन्छ, त्यसैले हाम्रा आँखामा सुन्तला र रातो रङ आइपुग्छन्।"
       },
       "speaker": "rocky",
-      "emotion": "grumpy"
+      "emotion": "grumpy",
+      "place": "garden"
     },
     {
       "visual": "question",
@@ -112,7 +119,8 @@
         "ne": "परिवार क्विज! मंगल ग्रहमा आकाश कस्तो रङको हुन्छ? भिडियो रोकेर अनुमान गर्नुहोस्... दिउँसो त्यो धुलाम्मे हल्का खैरो-पहेंलो हुन्छ, र त्यहाँको सूर्यास्त नीलो हुन्छ!"
       },
       "speaker": "maya",
-      "emotion": "excited"
+      "emotion": "excited",
+      "place": "classroom"
     },
     {
       "visual": "outro",
@@ -123,7 +131,8 @@
         "ne": "अर्को पटक माथि हेर्दा उफ्रिरहेको नीलो प्रकाशलाई सम्झनुहोला! जिप्पीसँग थप रमाइलो विज्ञानका लागि सब्सक्राइब गर्नुहोस्। बाइ-बाइ!"
       },
       "speaker": "leo",
-      "emotion": "happy"
+      "emotion": "happy",
+      "place": "playground"
     },
     {
       "visual": "comment_prompt",

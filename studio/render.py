@@ -7,17 +7,32 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from .cast import DRAW, draw_lineup, draw_speaker
+from .places import DEFAULT_PLACE, animate, backdrop, draw_panel
 from .visuals import VISUAL_LIBRARY, Ctx, font, gradient
 
 
 def _frame(ctx, scene, lt, talking, total_t, names=None):
     v = VISUAL_LIBRARY.get(scene["visual"], VISUAL_LIBRARY["question"])
-    img = gradient(ctx.W, ctx.H, *v["bg"]).copy()
-    d = ImageDraw.Draw(img)
     p = min(1.0, lt / max(scene["duration"], 0.01))
-    v["fn"](d, ctx, lt, p)
     speaker = scene.get("speaker", "leo")
     emotion = scene.get("emotion", "happy")
+    place = scene.get("place") or DEFAULT_PLACE.get(scene["visual"], "classroom")
+    if scene["visual"] == "comment_prompt" or place == "none":  # full-screen graphic
+        img = gradient(ctx.W, ctx.H, *v["bg"]).copy()
+        d = ImageDraw.Draw(img)
+        v["fn"](d, ctx, lt, p)
+    else:
+        img = backdrop(place, ctx.W, ctx.H).copy()
+        d = ImageDraw.Draw(img)
+        animate(d, ctx, place, total_t)
+        if scene["visual"] in ("intro", "outro"):
+            v["fn"](d, ctx, lt, p)  # confetti / bell straight over the location
+        else:
+            def paint(sub, sctx):
+                sub.paste(gradient(sctx.W, sctx.H, *v["bg"]))
+                v["fn"](ImageDraw.Draw(sub), sctx, lt, p)
+            draw_panel(img, ctx, place, paint)
+            d = ImageDraw.Draw(img)
     if scene["visual"] in ("intro", "outro"):
         draw_lineup(d, ctx, total_t, speaker, talking, names, emotion)
     else:

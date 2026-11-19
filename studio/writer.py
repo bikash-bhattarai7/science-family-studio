@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .common import ROOT, ask_claude, extract_json, lang_codes, new_episode_dir, read_json, write_json
 from .cast import CAST
+from .places import PLACES
 from .visuals import VISUAL_LIBRARY
 
 TOPICS_FILE = ROOT / "topics.json"
@@ -70,6 +71,7 @@ def mark_topic_done(topic: str) -> None:
 def write_script(cfg, topic: str) -> Path:
     visuals = "\n".join(f"- {k}: {v['desc']}" for k, v in VISUAL_LIBRARY.items())
     cast = "\n".join(f"- {k}: {v['desc']}" for k, v in CAST.items())
+    places = "\n".join(f"- {k}: {v['desc']}" for k, v in PLACES.items())
     secs = cfg["video"]["target_seconds"]
     prompt = f"""Write a {secs}-second animated science video answering: "{topic}"
 
@@ -97,6 +99,11 @@ Rules:
 - For each scene pick the visual that best matches from this library (never use 'comment_prompt' in "scenes"):
 {visuals}
 
+- Give each scene a "place" where the kids are (a real-feeling location; the science animation appears on a
+  whiteboard or "imagination window" there). Use 2-3 places per episode that fit the story, and keep the same
+  place for several scenes in a row (e.g. start in the classroom, go out to the garden to test it). Places:
+{places}
+
 ALSO write "short_question": the last line of the vertical Short. One kid asks an A-or-B question that is easy
 to answer in a comment, about the topic, e.g. "Which is faster: A, a cheetah... or B, a race car? Comment A or B!"
 Keep it under 20 words. Do not give the answer.
@@ -115,7 +122,7 @@ Return JSON:
   "community_poll": {{"question": "poll for the YouTube Community tab, posted the day before", "options": ["2-4 short options"]}},
   "playlist": "which series playlist this belongs to, e.g. 'Space Questions', 'Amazing Bodies', 'Earth & Weather', 'Animals', 'Everyday Science'",
   "next_topics": ["2 follow-up topics viewers would want next (for the end screen / next video)"],
-  "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "emotion": "<emotion>", "narration": "..."}}],
+  "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "emotion": "<emotion>", "place": "<place key>", "narration": "..."}}],
   "short_question": {{"speaker": "<kid key>", "narration": "...Comment A or B!", "answer": "the correct answer + one-line reason (for a pinned reply after 24h)"}},
   "short_scenes": [indices of 3-5 consecutive-or-not scenes that make a strong standalone vertical Short under 55 seconds, starting with the hook],
   "fact_check": [{{"claim": "...", "why_true": "...", "source_hint": "e.g. NASA, NOAA, a textbook topic"}}]
@@ -130,6 +137,8 @@ Return JSON:
             s["speaker"] = "leo"
         if s.get("emotion") not in emotions:
             s["emotion"] = "happy"
+        if s.get("place") not in PLACES:
+            s.pop("place", None)  # renderer picks a fitting default
     q = data.get("short_question") or {}
     if q.get("narration"):  # extra scene used only at the end of the Shorts
         data["scenes"].append({"visual": "comment_prompt", "speaker": q.get("speaker") if q.get("speaker") in CAST else "maya",
@@ -202,7 +211,7 @@ def write_review(cfg, ep: Path, data: dict) -> None:
     lines += ["", "## Scenes"]
     for i, s in enumerate(data["scenes"]):
         tag = " - SHORT-ONLY comment question" if s.get("short_only") else ""
-        lines.append(f"### Scene {i + 1}  ({s.get('speaker', 'leo')}, {s.get('emotion', 'happy')}, visual: {s['visual']}){tag}")
+        lines.append(f"### Scene {i + 1}  ({s.get('speaker', 'leo')}, {s.get('emotion', 'happy')}, {s.get('place', 'auto')}, visual: {s['visual']}){tag}")
         lines += [f"- **{c}**: {s['narration'][c]}" for c in codes]
         lines.append("")
     (ep / "REVIEW.md").write_text("\n".join(lines), encoding="utf-8")
