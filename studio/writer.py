@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .common import ROOT, ask_claude, extract_json, lang_codes, new_episode_dir, read_json, write_json
+from .common import ROOT, ask_json, lang_codes, new_episode_dir, read_json, write_json
 from .cast import CAST
 from .places import PLACES
 from .visuals import VISUAL_LIBRARY
@@ -44,7 +44,7 @@ Rules: phrased as a short question a child would actually say; answerable in 90 
 nothing scary, gory or dangerous to try. Put the 4 most clickable first.
 Do NOT repeat or closely overlap these: {used[-200:]}
 Return JSON: {{"topics": ["...", "..."]}}"""
-    new = extract_json(ask_claude(cfg, _system(cfg), prompt))["topics"]
+    new = ask_json(cfg, _system(cfg), prompt)["topics"]
     topics["queue"].extend(t for t in new if t not in used)
     write_json(TOPICS_FILE, topics)
     return new
@@ -108,7 +108,9 @@ ALSO write "short_question": the last line of the vertical Short. One kid asks a
 to answer in a comment, about the topic, e.g. "Which is faster: A, a cheetah... or B, a race car? Comment A or B!"
 Keep it under 20 words. Do not give the answer.
 
-Return JSON:
+Return ONLY valid JSON (double quotes, no comments, no trailing commas).
+"chapters": 4-6 chapters in order, first at scene 0. "short_scenes": indices of 3-5 scenes that make a strong
+standalone vertical Short under 55 seconds, starting with the hook.
 {{
   "topic": "{topic}",
   "title": "catchy YouTube title under 70 chars, no clickbait lies",
@@ -117,17 +119,17 @@ Return JSON:
   "thumbnail_text": "2-4 punchy words",
   "title_options": ["3 different curiosity-driven titles under 60 chars for A/B testing; honest, no ALL CAPS"],
   "thumbnail_texts": ["3 different 2-4 word thumbnail texts, one per title idea"],
-  "chapters": [{{"scene": 0, "title": "short chapter name"}}, "...4-6 chapters, first at scene 0, in order"],
+  "chapters": [{{"scene": 0, "title": "short chapter name"}}, {{"scene": 3, "title": "another chapter"}}],
   "pinned_comment": "a fun A-or-B question or mini-quiz for families to answer in the comments, written by one of the kids (e.g. 'Maya here! ...')",
   "community_poll": {{"question": "poll for the YouTube Community tab, posted the day before", "options": ["2-4 short options"]}},
   "playlist": "which series playlist this belongs to, e.g. 'Space Questions', 'Amazing Bodies', 'Earth & Weather', 'Animals', 'Everyday Science'",
   "next_topics": ["2 follow-up topics viewers would want next (for the end screen / next video)"],
   "scenes": [{{"visual": "<library key>", "speaker": "<cast key>", "emotion": "<emotion>", "place": "<place key>", "narration": "..."}}],
   "short_question": {{"speaker": "<kid key>", "narration": "...Comment A or B!", "answer": "the correct answer + one-line reason (for a pinned reply after 24h)"}},
-  "short_scenes": [indices of 3-5 consecutive-or-not scenes that make a strong standalone vertical Short under 55 seconds, starting with the hook],
+  "short_scenes": [0, 2, 4, 6],
   "fact_check": [{{"claim": "...", "why_true": "...", "source_hint": "e.g. NASA, NOAA, a textbook topic"}}]
 }}"""
-    data = extract_json(ask_claude(cfg, _system(cfg), prompt))
+    data = ask_json(cfg, _system(cfg), prompt)
 
     emotions = {"happy", "excited", "surprised", "thinking", "grumpy", "worried", "explaining"}
     for s in data["scenes"]:
@@ -186,7 +188,7 @@ English source:
 
 Return JSON:
 {{"title": "...", "description": "...", "scenes": ["...one per English scene, same order..."]}}"""
-        res = extract_json(ask_claude(cfg, _system(cfg), prompt))
+        res = ask_json(cfg, _system(cfg), prompt)
         if len(res["scenes"]) != len(data["scenes"]):
             raise SystemExit(f"{names[code]} translation has the wrong number of scenes - run again.")
         out[code] = res

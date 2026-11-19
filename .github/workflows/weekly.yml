@@ -21,7 +21,6 @@ on:
           - "standard (gemini-3.8-flash)"
           - "fast (auto-lite)"
           - "newest flash (auto-flash)"
-          - "best quality, slow (auto-pro)"
       upload:
         description: "Upload to YouTube as private/scheduled?"
         type: boolean

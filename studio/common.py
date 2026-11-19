@@ -68,7 +68,7 @@ def write_json(p: Path, data) -> None:
 
 # ---------------------------------------------------------------- AI
 def ask_claude(cfg: dict, system: str, prompt: str) -> str:
-    """Ask the AI writer. provider: gemini (free tier) or anthropic (paid)."""
+    """Ask the AI writer. Gemini (free tier) rotates through several free models when one is busy."""
     import time
     import requests
 
@@ -76,68 +76,108 @@ def ask_claude(cfg: dict, system: str, prompt: str) -> str:
     provider = llm.get("provider", "gemini")
     if os.environ.get("AI_MODEL"):  # chosen in the Run workflow menu (or set on your PC)
         llm["model"] = os.environ["AI_MODEL"]
-    if provider == "gemini":
-        llm["model"] = resolve_model(llm["model"])
-    for attempt in range(5):
+    chain = model_chain(llm) if provider == "gemini" else [llm["model"]]
+    i = llm.get("_chain_pos", 0) % len(chain)
+    for attempt in range(1, 11):
+        model = chain[i]
         try:
-            r = _call(llm, provider, system, prompt)
-        except requests.exceptions.RequestException as e:  # timeout / network blip
-            fb = llm.get("fallback_model")
-            if provider == "gemini" and fb and not llm.get("_fell_back"):
-                llm["_fell_back"] = True
-                llm["model"] = resolve_model(fb)
-                print(f"  AI too slow ({type(e).__name__}), switching to faster model {llm['model']}")
-            else:
-                print(f"  AI connection problem ({type(e).__name__}), retrying")
-                time.sleep(10)
-            continue
+            r = _call(dict(llm, model=model), provider, system, prompt)
+        except requests.exceptions.RequestException as e:
+            r, why = None, type(e).__name__
+        else:
+            why = str(r.status_code)
         if r is not None and r.status_code == 200:
+            llm["_chain_pos"] = i  # stick with the model that works
             if provider == "gemini":
-                parts = r.json()["candidates"][0]["content"]["parts"]
-                return "".join(p.get("text", "") for p in parts if not p.get("thought"))
-            return "".join(b.get("text", "") for b in r.json()["content"])
-        if provider == "gemini" and r.status_code == 400 and "think" in r.text.lower() and llm.get("fast_thinking", True):
-            print("  model has no thinking setting, retrying without it")
+                try:
+                    parts = r.json()["candidates"][0]["content"]["parts"]
+                    return "".join(p.get("text", "") for p in parts if not p.get("thought"))
+                except (KeyError, IndexError):
+                    why = "empty answer"
+            else:
+                return "".join(b.get("text", "") for b in r.json()["content"])
+        elif r is not None and r.status_code not in (404, 408, 429, 500, 502, 503, 504, 529) and \
+                not (r.status_code == 400 and "think" in r.text.lower()):
+            raise SystemExit(f"AI error {r.status_code} ({model}): {r.text[:400]}")
+        if r is not None and r.status_code == 400:  # model doesn't support the thinking setting
             llm["fast_thinking"] = False
             continue
-        if provider == "gemini" and r.status_code == 404:  # model retired: follow Google's suggestion
-            m = re.search(r"use models/([\w.\-]+)", r.text)
-            if m and m.group(1) != llm["model"]:
-                print(f"  model {llm['model']} retired, switching to {m.group(1)}")
-                llm["model"] = m.group(1)
-                continue
-        if r.status_code in (429, 500, 503, 529):  # busy / free-tier rate limit: wait and retry
-            wait = 20 * (attempt + 1)
-            print(f"  AI busy ({r.status_code}), retrying in {wait}s")
-            time.sleep(wait)
-            continue
-        raise SystemExit(f"AI error {r.status_code}: {r.text[:500]}")
-    raise SystemExit("AI still busy after 5 tries - try again later.")
+        nxt = (i + 1) % len(chain)
+        wait = min(10 * attempt, 45) if nxt <= i else 3  # a full lap of busy models -> wait longer
+        print(f"  {model}: {why} -> trying {chain[nxt]} in {wait}s")
+        time.sleep(wait)
+        i = nxt
+    raise SystemExit("Google's free AI is overloaded right now (all free models busy). Try again in 30-60 minutes.")
+
+
+def ask_json(cfg: dict, system: str, prompt: str, tries: int = 3):
+    """ask_claude + parse JSON; repairs small mistakes and asks again if the reply is broken."""
+    last = None
+    for k in range(tries):
+        text = ask_claude(cfg, system, prompt if k == 0 else
+                          prompt + "\n\nIMPORTANT: your last reply was not valid JSON. Reply with valid JSON only.")
+        try:
+            return extract_json(text)
+        except ValueError as e:
+            last = e
+            print(f"  AI reply was not valid JSON ({e}); asking again")
+            cfg["llm"]["_chain_pos"] = cfg["llm"].get("_chain_pos", 0) + 1  # try another model
+    raise SystemExit(f"AI kept returning broken JSON: {last}")
 
 
 _RESOLVED: dict = {}
+_MODELS: list | None = None
+
+
+def _list_models() -> list[dict]:
+    global _MODELS
+    if _MODELS is None:
+        import requests
+        try:
+            r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=300",
+                             headers={"x-goog-api-key": os.environ.get("GEMINI_API_KEY", "")}, timeout=30)
+            r.raise_for_status()
+            _MODELS = [m for m in r.json().get("models", [])
+                       if "generateContent" in m.get("supportedGenerationMethods", [])]
+        except Exception as e:  # noqa: BLE001
+            print(f"  could not list Gemini models ({e})")
+            _MODELS = []
+    return _MODELS
 
 
 def resolve_model(name: str) -> str:
-    """'auto-lite' / 'auto-flash' / 'auto-pro' -> newest matching free Gemini model your key can use."""
-    if not name.startswith("auto-") or name in _RESOLVED:
-        return _RESOLVED.get(name, name)
-    import requests
-
-    kind = {"auto-lite": "flash-lite", "auto-flash": "flash", "auto-pro": "pro"}.get(name, "flash")
-    r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
-                     headers={"x-goog-api-key": os.environ.get("GEMINI_API_KEY", "")}, timeout=30)
-    r.raise_for_status()
-    best = pick_model([m for m in r.json().get("models", [])
-                       if "generateContent" in m.get("supportedGenerationMethods", [])], kind)
-    if not best:
-        raise SystemExit(f"No Gemini '{kind}' model available for your key.")
-    print(f"  {name} -> {best}")
-    _RESOLVED[name] = best
-    return best
+    """'auto-lite' / 'auto-flash' / 'auto-pro' -> newest matching Gemini model your key can use."""
+    if not name.startswith("auto-"):
+        return name
+    if name not in _RESOLVED:
+        kind = {"auto-lite": "flash-lite", "auto-flash": "flash", "auto-pro": "pro"}.get(name, "flash")
+        best = pick_model(_list_models(), kind)
+        _RESOLVED[name] = best or ("gemini-flash-lite-latest" if kind == "flash-lite" else "gemini-flash-latest")
+        print(f"  {name} -> {_RESOLVED[name]}")
+    return _RESOLVED[name]
 
 
-def pick_model(models: list[dict], kind: str) -> str | None:
+def model_chain(llm: dict) -> list[str]:
+    """Chosen model first, then other free Flash / Flash-Lite models as backups (newest first)."""
+    if "_chain" in llm:
+        return llm["_chain"]
+    chain = [resolve_model(llm["model"])]
+    for extra in [llm.get("fallback_model", "auto-lite"), "auto-flash", "auto-lite"]:
+        chain.append(resolve_model(extra))
+    for kind in ("flash", "flash-lite"):  # every other stable flash model, newest first
+        for n in ranked_models(_list_models(), kind):
+            chain.append(n)
+    seen, out = set(), []
+    for m in chain:
+        if m and m not in seen:
+            seen.add(m)
+            out.append(m)
+    llm["_chain"] = out[:6]
+    print(f"  AI models to try: {', '.join(llm['_chain'])}")
+    return llm["_chain"]
+
+
+def ranked_models(models: list[dict], kind: str) -> list[str]:
     def ver(n):
         m = re.match(r"gemini-(\d+(?:\.\d+)?)-(.*)$", n)
         return (float(m.group(1)), m.group(2)) if m else (0, "")
@@ -145,58 +185,69 @@ def pick_model(models: list[dict], kind: str) -> str | None:
     for m in models:
         n = m["name"].split("/")[-1]
         v, rest = ver(n)
-        if not v or any(x in rest for x in ("preview", "exp", "image", "tts", "audio", "live", "embedding")):
+        if not v or any(x in rest for x in ("preview", "exp", "image", "tts", "audio", "live", "embedding", "thinking")):
             continue
-        base = rest.split("-0")[0]  # drop dated suffixes like -001
-        if (kind == "flash" and base == "flash") or (kind != "flash" and base == kind):
+        base = rest.split("-0")[0]
+        if base == kind:
             cands.append((v, n))
-    return max(cands)[1] if cands else None
+    return [n for _, n in sorted(cands, reverse=True)]
+
+
+def pick_model(models: list[dict], kind: str) -> str | None:
+    r = ranked_models(models, kind)
+    return r[0] if r else None
 
 
 def _call(llm, provider, system, prompt):
     import requests
 
-    if True:
-        if provider == "gemini":
-            key = os.environ.get("GEMINI_API_KEY")
-            if not key:
-                raise SystemExit("Set GEMINI_API_KEY (free at https://aistudio.google.com/apikey).")
-            r = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{llm['model']}:generateContent",
-                headers={"x-goog-api-key": key, "content-type": "application/json"},
-                json={
-                    "systemInstruction": {"parts": [{"text": system}]},
-                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                    "generationConfig": dict({"maxOutputTokens": llm.get("max_tokens", 16000),
-                                              "responseMimeType": "application/json"},
-                                             **({"thinkingConfig": {"thinkingLevel": "low"}}
-                                                if llm.get("fast_thinking", True) else {})),
-                },
-                timeout=llm.get("timeout_seconds", 150),
-            )
-            return r
-        else:
-            key = os.environ.get("ANTHROPIC_API_KEY")
-            if not key:
-                raise SystemExit("Set ANTHROPIC_API_KEY in your environment or in a .env file.")
-            r = requests.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": key, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": llm["model"], "max_tokens": llm.get("max_tokens", 8000),
-                      "system": system, "messages": [{"role": "user", "content": prompt}]},
-                timeout=600,
-            )
-            return r
+    if provider == "gemini":
+        key = os.environ.get("GEMINI_API_KEY")
+        if not key:
+            raise SystemExit("Set GEMINI_API_KEY (free at https://aistudio.google.com/apikey).")
+        gen = {"maxOutputTokens": llm.get("max_tokens", 16000), "responseMimeType": "application/json"}
+        if llm.get("fast_thinking", True) and "lite" not in llm["model"]:
+            gen["thinkingConfig"] = {"thinkingLevel": "low"}
+        return requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{llm['model']}:generateContent",
+            headers={"x-goog-api-key": key, "content-type": "application/json"},
+            json={"systemInstruction": {"parts": [{"text": system}]},
+                  "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                  "generationConfig": gen},
+            timeout=llm.get("timeout_seconds", 150),
+        )
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise SystemExit("Set ANTHROPIC_API_KEY in your environment or in a .env file.")
+    return requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+        json={"model": llm["model"], "max_tokens": llm.get("max_tokens", 8000),
+              "system": system, "messages": [{"role": "user", "content": prompt}]},
+        timeout=600,
+    )
 
 
 def extract_json(text: str):
-    """Pull the first JSON object/array out of a model reply."""
+    """Pull the first JSON object/array out of a model reply, fixing common small mistakes."""
     m = re.search(r"```(?:json)?\s*(.*?)```", text, re.S)
     if m:
         text = m.group(1)
-    start = min([i for i in (text.find("{"), text.find("[")) if i != -1])
-    return json.loads(text[start:])
+    starts = [i for i in (text.find("{"), text.find("[")) if i != -1]
+    if not starts:
+        raise ValueError("no JSON found")
+    text = text[min(starts):]
+    try:
+        return json.JSONDecoder().raw_decode(text)[0]
+    except json.JSONDecodeError:
+        pass
+    fixed = re.sub(r"//[^\n\"]*$", "", text, flags=re.M)          # // comments
+    fixed = re.sub(r",\s*([}\]])", r"\1", fixed)                    # trailing commas
+    fixed = re.sub(r"([{,]\s*)([A-Za-z_]\w*)(\s*:)", r'\1"\2"\3', fixed)  # unquoted keys
+    try:
+        return json.JSONDecoder().raw_decode(fixed)[0]
+    except json.JSONDecodeError as e:
+        raise ValueError(str(e)) from None
 
 
 # ---------------------------------------------------------------- audio
