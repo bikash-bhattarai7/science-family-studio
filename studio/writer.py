@@ -21,14 +21,15 @@ def _system(cfg):
 
 # ---------------------------------------------------------------- ideas
 def load_topics() -> dict:
-    if TOPICS_FILE.exists():
-        return read_json(TOPICS_FILE)
-    return {"queue": [], "done": []}
+    t = read_json(TOPICS_FILE) if TOPICS_FILE.exists() else {}
+    if t.get("version") != 2:  # older, less engaging ideas: keep history, refill the queue with new-style topics
+        t = {"version": 2, "queue": [], "done": t.get("done", []), "old_ideas": t.get("queue", [])}
+    return t
 
 
 def generate_ideas(cfg, count: int = 12) -> list[str]:
     topics = load_topics()
-    used = topics["queue"] + topics["done"]
+    used = topics["queue"] + topics["done"] + topics.get("old_ideas", [])
     prompt = f"""Suggest {count} NEW science video topics for a family channel (kids 6-12 + parents).
 Make them irresistible to click and easy to search. Mix these formats:
 - "Why does my body...?" (hiccups, goosebumps, brain freeze, tummy rumbles)
